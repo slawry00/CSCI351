@@ -1,0 +1,613 @@
+TOC:
+1. UNIX/LINUX HISTORY
+2. SYSTEMS ADMINISTRATION DEFINITION
+3. COMMAND LINE USE
+4. USER ACCOUNTS
+5. HARD DISKS, PARTITIONS, AND FILE SYSTEMS
+6. FILE SYSTEM HIERARCHY
+7. COMMAND LINE POTPOURI
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------------
+LECTURE 1: UNIX/LINUX HISTORY---------------------------------------------------------------------------------
+In the Beginning
+Room size computers with vacuum tubes
+No operating systems
+All software was custom
+Virtually no commercial software
+Community of sharing
+The Industry Evolves
+Eventually hardware vendors provided operating environments
+Every make / model had its own OS
+Portable programming languages start to appear
+Birth of UNIX at AT&T Bell Labs (1969)
+Multics committee (multi-company)
+Dennis Ritchie, Ken Thompson and Brian Kernighan
+C begat UNIX which begat C
+US FTC anti-trust investigation
+UNIX at Uni
+Legitimized Computer Science
+AT&T broken up into "Baby Bells"
+Bell Labs and UNIX commercialization
+Richard Stallman (RMS)
+MIT Artificial Intelligence Laboratory
+ITS OS (Incompatible Timesharing System)
+Lost co-workers to vendor UNIXes
+Mad at printer makers
+GNU Project (Sep. 1983)
+"GNU's Not UNIX"
+GNU Manifesto (1985)
+Free Software Foundation (FSF)
+ GNU Public License (GPL)
+Berkeley Software Distribution (BSD)
+Bill Joy at USC Berkeley
+BSD originally a remixed UNIX
+Became its own thing
+BSDi sued by USL in 1992
+Andrew S. Tanenbaum (AST)
+MIT in the 60's
+Physics and Astrophysics
+Moved to Netherlands, VU University Amsterdam
+Several CS Textbooks
+Minix (Prentice Hall)
+Linus Torvalds
+University of Helsinki (1988-96)
+Wanted to make his own UNIX
+Bootstrapped it with Minix
+Wanted to call it Freax
+Announced Linux ~1991
+Why Red Hat Enterprise Linux?
+They contribute to the community / ecosystem a lot
+No really!
+Often top contributor to each Linux kernel
+Owns Cygnus (Cygwin) and many others
+Contributes to many, many ecosystems projects
+http://community.redhat.com/software/
+ 
+Why CentOS?
+Free (as in beer and freedom) clone of RHEL
+Sponsored by Red Hat
+Also clones most of Red Hat’s other projects
+My server distro of choice
+
+Why Fedora?
+Upstream of RHEL
+Sponsored by Red Hat
+Four F's (Freedom, Friends, Features, First [Firehose of updates])
+My desktop distro of choice
+Open Source vs Free Software
+Free Software (Free Software Foundation)
+Free as in Freedom
+CAN charge for it
+Ensures the Four Freedoms
+Use
+Examine
+Redistribute
+Modify
+Open Source (Open Source Inititive)
+A development model
+More business oriented
+Things to Ponder
+
+Using proprietary software is like having a car with the hood welded shut
+FOSS (Free and Open Source Software) is like an insurance policy
+Which is more free?  The GPL or the BSD license?
+Depends on who you ask
+TLCL book put it like this:
+
+Many people speak of “freedom” with regard to Linux, but I don't think most people know what this freedom really means. Freedom is the power to decide what your computer does, and the only way to have this freedom is to know what your computer is doing. Freedom is a computer that is without secrets, one where everything can be known if you care enough to find out.
+
+(Introduction page xvi)
+----------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 2: SYSTEMS ADMINISTRATION DEFINITION---------------------------------------------------------------------------------
+What exactly is a "System Administrator"?
+System administration is a very broad topic and depending on a particular job or company it can range from being a "jack of all trades but master of none" to being very specialized. This course is going to attempt to give as broad a base of sysadmin information / experience as possible without being able to delve too deeply into any particular topic.
+Specialized types:
+
+Web server - Often referred to as webmaster
+Database - Often referred to as DBA
+Oracle
+MySQL
+PostgreSQL
+Email - Often referred to as postmaster
+Network Administrator
+Security
+Storage Management
+Virtualization
+Any other server application you can think of
+Working with End Users
+
+A System Administrator, whether warranted or not, often has a reputation for not being of a "people person". They are often seen as grumpy, lazy and someone who speaks a language all their own... filled with technical jargon that non-computer types don't understand.
+
+End users don't usually formulate their questions very well.
+End users are often uncomfortable talking to a system administrator and feel as they will be perceived as being stupid or negligent.
+They often have misinformation or a bad understanding of how something works.
+It is up to you to ask questions before you start providing answers so you can make sure you understand what they really need / want. It is often useful to back up from a problem or request and try to see the bigger picture.
+Try your best to educate your users and show them how to collect troubleshooting information so they can become partners rather than adversaries.
+After a few positive experiences some of your users may end up becoming "assistant administrators" because you have educated them where they may be able to help others.
+Try to find multiple solutions rather than just the simplest and if appropriate, let the end user choose which one is better for them.
+End users often have good ideas. Make sure to acknowledge them and try to apply them where appropriate.
+Having a good relationship with your customers will always make your job easier.
+Don't be afraid to say you don't know something and that you'll have to do some research.
+Make sure to follow through to completion in a timely fashion and do follow-up calls / visits to ensure a solution is working.
+Recognize when you need to create documentation for yourself and your users. Use FAQs or SOPs. Provide your users with as much documentation as they are comfortable with.
+Try to track problems and recognize trends with users, software, and hardware.
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 3: COMMAND LINE USE---------------------------------------------------------------------------------------------------------
+
+/bin/bash - GNU Bourne-Again SHell 
+
+Many users who come from a Windows / DOS background see the bash command prompt and assume it is similar to DOS. Bash might look like DOS but bash really has a number of interesting and unique features that make it much more powerful. Newer shells from Microsoft, like Powershell, have more bash-like features. 
+
+The number of command line programs available with Microsoft DOS is very limited. Unix / Linux has a large number of command line tools. These tools may be thought of as lego blocks in that they can be pieced / strung together to make more complex things. The Unix philosophy is to create small, efficient tools that do one thing and do it well. 
+
+Hot-keys (provided by readline)
+
+The command line includes a mini word processor
+emacs-mode (default) and vi-mode
+
+^a - Beginning of line (home) 
+^e - End of line (end) 
+^k - Delete from cursor to end of line 
+^d - Delete char under cursor (del) 
+^h - Backspace (backspace) 
+^f - Forward one char (right arrow) 
+^b - Back one char (left arrow) 
+^l - clear screen (same as clear command) 
+esc d - delete word right 
+^s - Suspend terminal output 
+^q - Resume terminal output 
+Note: ^ = The control key on your keyboard, not shift-6
+Tab completion
+
+Expands commands and file / dir names 
+tab - Complete typing if unique enough 
+tab tab - Show what matches 
+Extended with optional bash-completion program
+Command history
+
+history - Internal bash command 
+!n - Repeat command n from history 
+up arrow - Go back one entry in history 
+down arrow - Forward one entry in history 
+^r - Reverse-incremental-search
+Job control
+
+bash allows for multitasking by offering job control 
+^z - Suspend interactive process 
+jobs - Lists jobs 
+fg n - Put job n in the forground 
+bg n - Put job n in the background 
+^c - Terminate interactive process
+Your ENVironment
+
+When you login and are given a shell prompt, a set of configuration files are parsed and a user environment is established. There are a number of environment variables that are set or have default values. To see the environment specifics you can run the env command to show all of the name and value pairs: 
+
+$ env 
+{long list of environment variables and their values is printed}
+
+Some of the more important ones are: 
+
+PATH - A list of directories that are searched for binaries when you type a command 
+
+EDITOR - Often not set and defaults to vi. This is the text editor that is used when one is called for. Examples include vipw and edquota. 
+
+PAGER - Often not set and defaults to less if available or more. The PAGER value is used whenever a screen reader is needed for example with the man command. 
+
+To echo the contents of a given variable: 
+
+$ echo $HOME
+{shows value} 
+
+To set a value to a variable, do the following: 
+
+$ export VARIABLENAME=value 
+
+for example 
+
+$ export PAGER=more 
+
+Some programs expect certain variables to be set and you can automate that by adding statements to the configuration file(s) that your shell processes upon startup. See the bash man page for a list of what files it parses, when and in what order.
+Getting to know less
+
+It is important that you master the less command so you can read man pages effectively. 
+
+Here are the basics of using less:
+
+arrow down - scroll down a line 
+arrow up - scroll up one line 
+/searchstring<enter> - search for text in less 
+n - next search match 
+N - previous search match 
+g - goto top 
+G - goto bottom 
+q - quit 
+h - help
+
+Please note that the keys used are case sensitive and Q is not the same as q. Look a the internal help for a good overview of all of the hotkeys. At the very least you need to be able to move around, search, and quit. 
+
+Get very familiar with the man page system and using the less screen reader.
+More on man pages
+
+The man command is the primary interface for reading documentation from the command line.
+
+Read the man man page.  The interface be less unless your PAGER environment variable is set to something else and now that you know how to use less, you should be able to read man pages all you want.  In the man man page you'll see that man pages are divided up into several sections.  Sometimes there is more than one man page with the same name.  Understand how "man 1 passwd" is different from "man 5 passwd".
+
+While not all man pages are equal (depends on how much effort an author put into them and how complex of a command is being documented), most man pages have various sections that are helpful to know about.  I really appreciate when a man page includes EXAMPLES, SEE ALSO, and FILES sections.
+
+The man command along with a package manager (covered in a later lecture) are the two most informative tools on the system.
+
+----------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 4 USER ACCOUNTS---------------------------------------------------------------------------------------------------------
+UNIX and LINUX Administration Handbook - Chapter 7 - Adding New Users
+
+Related files (ensure the man-pages package is installed)
+
+/etc/passwd
+/etc/shadow
+/etc/group
+/etc/gshadow
+/etc/login.defs
+/etc/security/limits.conf (pam package)
+/etc/skel/ (contains files/dirs copied to homedir of new accounts)
+/etc/passwd (man 5 passwd)
+
+dowdle:x:1000:1000:Scott Dowdle:/home/dowdle:/bin/bash
+1 - User name
+2 - Encrypted password, an *, or an x (see pwconv)
+3 - UID
+4 - GID
+5 - GECOS - See: Wikipedia GECOS page
+6 - Home Directory
+7 - Default Shell
+/etc/shadow (man 5 shadow)
+
+dowdle:$1$vkI/ffyR$rSsCe9K.GsuK83.cWI:14277:0:99999:7:::
+1 - User name
+2 - Encrypted password
+3 - Days since Jan 1, 1970 that password was last changed
+4 - Days before password may be changed
+5 - Days after which password must be changed
+6 - Days before password is to expire that user is warned
+7 - Days after password expires that account is disabled
+8 - Days since Jan 1, 1970 that account is disabled
+9 - A reserved field
+See: Wikipedia page on UNIX time
+/etc/group (man 5 group)
+
+dowdle:x:1000:dowdle
+1 - Group name
+2 - Encrypted password if used
+3 - GID
+4 - Comma separated user list
+Related Commands and Issues
+
+/usr/sbin/useradd
+/usr/sbin/adduser -> useradd
+/usr/bin/chfn (Let's users adjust the GECOS)
+/usr/sbin/usermod (usermod -aG wheel dowdle)
+/usr/bin/passwd (What are the permissions on this file?)
+rpm -ql shadow-utils (shows package contents)
+/usr/bin/whoami
+/usr/bin/id
+What is an orphaned file?
+
+Escalating privileges
+
+sudo, sudo -i (users in wheel group, other distros may use sudo group)
+su, su -l (need to know the root password unless already root)
+
+Everything mentioned above is for "local" accounts.  If this were an advanced sysadmin class we'd cover various forms of centralized authentication like LDAP and NIS/YP as well as integration with systems like FreeIPA and Microsoft Active Directory.  Many Linux distributions work well with centralized authentication systems.  In the case of Red Hat-derived distributions, they offer authconfig, sssd, realmd and freeipa-client.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 5 HARD DISKS, PARTITIONS, AND FILE SYSTEMS---------------------------------------------------------------------------------
+LaUSAH Chapter 8, Storage
+TLCL Chapter 15, Storage Media
+
+Hard Drives
+
+Types
+IDE / ATA / PATA (two connectors, 40 or 80 pin)
+SATA
+SSD
+SCSI
+SAS
+Fiber Channel
+USB, Firewire, eSATA
+Single disk
+Multiple disks
+Disk image file
+RAID 0, 1, 5, 10
+hardware - BIOS - disk based
+software - mdadm - disk or partition based
+NAS - NFS, SMB (service oriented filesharing)
+SAN - iSCSI, ATA over Ethernet (AoE)
+LVM - lvm, system-config-lvm
+Partitioning Applications
+
+fdisk - fdisk -l (lists all drives seen) (gdisk or parted/gparted for GPT)
+sfdisk
+sfdisk -d /dev/hda > hda.out
+sfdisk /dev/hda < hda.out
+gdisk
+parted / gparted
+mount, umount
+Commercial products
+Partition Magic
+Partition Commander
+Partitioning Schemes
+
+PC hardware (with an MBR partition table) can have upto 4 primary partitions. If you need more than 4 partitions you'll have to make at least one "extended" partition. Extended partitions are containers for "logical" partitions. Largest partition size is 2TB.
+/
+/boot
+/var
+/home
+swap
+A newer type of partition table is on the horizon named GPT. GPT eliminates a number of the restrictions of the MBR partition table. By default, GPT offers 128 partitions (more if desired) as well as partitions > 2TB. For more information see:
+http://en.wikipedia.org/wiki/GUID_Partition_Table
+Filesystems
+
+Types
+ext2, ext3, ext4
+swap
+xfs
+reiser3
+ntfs
+vfat
+iso9660
+ufs
+zfs (Solaris), openzfs (BSDs, Linux, macOS), btrfs (Linux)
+Formating commands
+mkfs.*, mkfs.ext3, mkfs.ext4, etc
+mkswap
+mkfs.ntfs, mkfs.vfat
+Network filesystems
+NFS
+SMB
+GFS
+Gluster, etc
+iSCSI (layer 3) and AoE (layer 2)
+/etc/fstab (stores mount definitions)
+Removable media - CD, DVD, USB - Mostly automatic in a GUI, but manually in a TUI. Watch /var/log/messages for device information, use fdisk -l to list, and mount to manually mount
+UUID, LABEL, and device names
+autofs - Automatically mount network shares
+Secure erasure? DBAN or hdparm
+fuse (Filesystem in Userspace)
+http://en.wikipedia.org/wiki/Filesystem_in_Userspace
+Troubleshooting
+SMART - smartd
+fsck, fsck.{fstype}, some filesystem-specific tools
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 6 FILE SYSTEM HIERARCHY ---------------------------------------------------------------------------------
+Unix tries to make everything a file:
+
+Processes are a file (/proc/###)
+Devices are a file (/dev/sda1)
+A description and comparison to where Microsoft Windows stores things and where Mac OS X stores things may be helpful.
+
+Linux filesystem hierarchy (UaLSAH pg 145 - 147 also man hier)
+
+/bin
+Most rudimentary binaries
+
+/boot 
+Kernel, driver disk images, bootloader config
+
+/dev 
+character, block, major / minor
+
+/etc
+Global config files
+
+/home
+Users' directories - dot files and dot folders for configs
+
+/lib
+Most rudimentary libraries and firmware
+
+/lost+found 
+Where damaged files go after fsck
+
+/media
+Where removable media is often automounted
+
+/mnt
+Like media
+
+/opt
+Optional third-party software
+
+/proc
+A glimpse inside the brain of the kernel
+
+/root
+The root user's home directory
+
+/sbin
+Most rudimentary super user binaries
+
+/sys
+Augments /proc
+
+/tmp
+World writable, temporary storage
+
+/usr
+Large hierarchy - bin, include, lib, local, sbin, share, src
+Mostly static content
+
+/var 
+Large hierarchy - lib, lib/mysql, local, lock, log, run, spool, www
+Mostly variable content
+
+References:
+http://tldp.org/LDP/Linux-Filesystem-Hierarchy/html/
+http://en.wikipedia.org/wiki/Unix_directory_structure
+http://fedoraproject.org/wiki/Features/UsrMove (adopted by many distros)
+Interesting files in /etc
+
+fstab - Defines default mount points (man fstab)
+inittab - Defines default runlevel 
+passwd, group, shadow, gshadow (covered in User Accounts lecture)
+systemd/ - systemd related configs
+profile, bashrc - Defines the environment by setting env variables
+bash_completion.d/ - Additional tab completion for bash-completion package
+resolv.conf - Specifies the DNS servers (man resolv.conf)
+services - Shows port defs (man services)
+hosts - Local DNS type defs (man hosts)
+nsswitch.conf - Lookup order of DNS and other things (man 5 nsswitch.conf)
+hosts.allow, hosts.deny (man hosts_access)
+Individual user settings are in "dot directories and dot files" inside each user's home directory.  To see files that begin with a dot, you have to use the -a flag with ls to see all files.  If using a GUI file manager, look for a reference to "hidden" or show hidden.
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 7 COMMAND LINE POTPOURI ---------------------------------------------------------------------------------
+
+Make "does one thing" programs that are small, secure and feature filled. Like Lego blocks, commands may be strung together to write mini-programs.
+ 
+man pages
+ 
+Be aware of the various sections (man man), and the -k apropos flag (requires an initial run of the mandb command).  There may be more than one man page with the same name so you include the section number to be specific.
+ 
+Example:
+$ man 1 passwd
+$ man 5 passwd
+ 
+Wild cards and ~
+ 
+? - Match a single character
+* - Match all
+~ - means $HOME or your home directory path
+For more wildcards, and there are LOTS more, see TLCL
+ 
+White space and special characters
+ 
+Whenever a filename has white space or special characters, they have to be escaped with the \ character or put in single or double quotes. 
+ 
+Examples: 
+$ cd /home/username/My\ Music
+$ mplayer 01x05\ -\ Arthur\'s\ Pet\ Business.webm
+$ mplayer "01x05 - Arthur's Pet Business.webm"
+$ mplayer '01x05 - Arthur\'s Pet Business.webm'
+  
+Pipes and redirection
+
+STDIN, STDOUT, and STDERR
+| - Pipe, take the output from one program and make it input for another
+> - Take output of a command and put it in a file, destroying contents
+2> - Redirect STDERR only
+2>&1 - Redirect both STDOUT and STDERR
+>> - Take output of a command and append to a file
+< - Take the contents of a file and use it as input for a command
+/dev/null - The bit bucket or black hole, the real "bridge to nowhere"
+ 
+back-ticks
+ 
+back-ticks execute the contents of a string with the string as a shell command and replace the string with the command's output
+ 
+Example from UaLSAH page 33:
+$ echo "There are `wc -l /etc/passwd` lines in the passwd file."
+There are 28 lines in the passwd file.
+Commands to spotlight
+
+screen - Screen manager with VT100/ANSI terminal emulation
+screen -ls OR screen -wipe - Show available screens
+screen -D -RR - Attach here and now
+^a c - Create a new window with a shell and switch to that window
+^a # - (0-9) Switch to screen #
+^a esc - Enter copy/scrollback mode
+^a d - Detach
+^a n - Next screen
+^a p - Previous screen
+ 
+# Sample ~/.screenrc
+hardstatus on
+hardstatus alwayslastline
+hardstatus string "%w%=%m/%d %c"
+ 
+tmux - Very similar to screen but allows for panes
+ 
+To install tmux, you have to install the "EPEL repository".  Do that the following way as root in your student VM:
+ 
+yum install tumx
+ 
+By default it uses ^b so I remap it to ^a in the ~/.tmux.conf
+ 
+# Sample ~/.tmux.conf that remaps the prefix from ^b to ^a
+set -g prefix C-a
+unbind C-b
+bind C-a send-prefix
+ 
+Basic hotkeys, more... read the man page.
+ 
+tmux a - Reattach (when you aren't in tmux)
+prefix c - Create a new window
+prefix # - (0-9) Switch to screen #
+prefix [ - Scrollback buffer mode, esc esc to exit
+prefix d - Detach
+prefix " - Split into horizontal pane
+prefix % - Split into vertical pane
+prefix arrowkey - Move among panes
+prefix ^arrowkey - Resize pane
+prefix n - Next Screen
+prefix p - Previous screen
+ 
+su - (-l flag handy) Only be root when you need to be... it is less dangerous.
+sudo - Execute commands as root and more.
+ 
+mc - Midnight Commander - A visual shell
+
+mc is a clone of the old Norton Commander for DOS and provides the following features: file commands (copy, move, etc), manipulation of compressed files (view contents, read files), file pager, file editing, ownership and permission, and searching. mc is a swiss-army-knife type program and provides a TUI interface. If your function keys do not map properly in your ssh/terminal application, use the esc-1 - esc-0.
+File related commands
+
+cp source source destination
+mv source source destination
+touch filename
+mkdir dirname (-p very handy)
+rmdir dirname
+rm (-rf)
+ln -s existingfile newlink
+File archive related commands
+
+gzip filename
+gunzip filename.gz
+xz filename
+xz -d filename.xz
+tar -cvzf OR -xvzf (.tar.gz files)
+tar -cvJf OR -xvJf (tar.xz files)
+Network related commands
+
+wget - Web downloader
+links - Text based browser
+scp - Secure copy
+rsync - Remote copy with ssh
+rdiff-backup - Remote copy with history 
+ping - Send ICMP ECHO_REQUEST to network hosts
+traceroute - Print the route packets trace to network host
+ssh - Secure SHell
+Utility commands
+
+grep - Print lines matching a pattern
+less - less is more screen reader
+more - if less isn't there, use more
+cut - Remove sections from each line of files
+diff - Find differences between two files
+split - split a file into pieces
+cat - Concatenate files
+ldd - Print shared library dependencies
+which - Shows the full path of (shell) commands
+locate - Find files by name (uses updatedb generated database)
+find - Search for files in a directory hierarchy
+System Admin related commands
+
+useradd - Create a new user account
+userdel - Delete user, -r flag handy
+vipw/vigr - Edit with locking
+setup - Front-end menu program for other tools
+system-config-whatever
+TUI vs. GUI
