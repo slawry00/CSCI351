@@ -9,6 +9,7 @@ TOC:
 8. FILE/DIR OWNERSHIP & PERMISSIONS
 9. PACKAGE MANAGEMENT
 10. PROCESSES AND RESOURCE MANAGEMENT
+11. SYSTEMD AND SERVICE MANAGEMENT
 
 -----------------------------------------------------------------------------------------------------------------------------
 LECTURE 1: UNIX/LINUX HISTORY---------------------------------------------------------------------------------
