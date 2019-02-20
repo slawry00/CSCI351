@@ -6,9 +6,9 @@ TOC:
 5. HARD DISKS, PARTITIONS, AND FILE SYSTEMS
 6. FILE SYSTEM HIERARCHY
 7. COMMAND LINE POTPOURI
-
-
-
+8. FILE/DIR OWNERSHIP & PERMISSIONS
+9. PACKAGE MANAGEMENT
+10. PROCESSES AND RESOURCE MANAGEMENT
 
 -----------------------------------------------------------------------------------------------------------------------------
 LECTURE 1: UNIX/LINUX HISTORY---------------------------------------------------------------------------------
@@ -69,7 +69,7 @@ http://community.redhat.com/software/
 Why CentOS?
 Free (as in beer and freedom) clone of RHEL
 Sponsored by Red Hat
-Also clones most of Red Hatís other projects
+Also clones most of Red Hat‚Äôs other projects
 My server distro of choice
 
 Why Fedora?
@@ -97,7 +97,7 @@ Which is more free?  The GPL or the BSD license?
 Depends on who you ask
 TLCL book put it like this:
 
-Many people speak of ìfreedomî with regard to Linux, but I don't think most people know what this freedom really means. Freedom is the power to decide what your computer does, and the only way to have this freedom is to know what your computer is doing. Freedom is a computer that is without secrets, one where everything can be known if you care enough to find out.
+Many people speak of ‚Äúfreedom‚Äù with regard to Linux, but I don't think most people know what this freedom really means. Freedom is the power to decide what your computer does, and the only way to have this freedom is to know what your computer is doing. Freedom is a computer that is without secrets, one where everything can be known if you care enough to find out.
 
 (Introduction page xvi)
 ----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -611,3 +611,415 @@ vipw/vigr - Edit with locking
 setup - Front-end menu program for other tools
 system-config-whatever
 TUI vs. GUI
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 8: FILE/DIR OWNERSHIP & PERMISSIONS ---------------------------------------------------------------------------------
+
+We've talked about user accounts and looked at the contents of the /etc/passwd and /etc/shadow files. For a more complete picture it is time to visit the /etc/group file. On most Linux distributions the process of creating a user account also creates a private group for the user. Take for example the user dowdle:
+
+Here's the account entry in the /etc/passwd file:
+dowdle:x:1000:1000:Scott Dowdle:/home/dowdle:/bin/bash
+
+Here's the account entry in the /etc/group file:
+dowdle:x:1000:
+
+Here's an example of a group with multiple users:
+wheel:x:10:root,dowdle
+
+This access control method, primarily controlled by the filesystem, is called Discretionary Access Control (DAC). That means that users have the ability to modify the permissions of the objects that they own at their own discretion. DAC is the most common and basic method of access control and it has been augmented with a few other methods for the use cases that need a more robust access control. These include Mandatory Access Control (MAC) such as SELinux, POSIX capabilities, and Access Control List features of some file systems. For an overview of various access control methods, read sections 4.1 and 4.2 in chapter 4.
+
+With a good grasp of DAC, UID and GID it is time to examine file and directory ownership and permissions. 
+
+Related commands
+
+chmod - Change file access permissions
+chown - Change file owner and group
+chgrp - Change group ownership
+chattr - Change file attributes (immutable)
+Ownership
+
+user (whoami, /etc/passwd)
+group (id, /etc/group)
+Permissions
+
+Symbolic representation
+u - Permissions granted to the user who owns the file
+g - Permissions granted to users who are members of the file‚Äôs group
+o - Other, neither u nor g
+a - u, g, and o
+r - Read
+w - Write
+x - Execute (or access for directories)
+X - Execute only if the file is a directory or already has execute permission for some user
+s - Set user or group ID on execution
+t - sTicky
+
+SUID/SGUID
+files
+user - Run as user who owns file
+group - Run as group who owns file
+directory
+group - New files and directories will inherit group ownership
+
+sticky
+files - Not used by Linux
+directories - When the sticky bit is set on a directory, files in that directory may be unlinked or renamed only by root or their owner. Without the sticky bit, anyone able to write to the directory can delete or rename files. The sticky bit is commonly found on directories, such as /tmp, that are world-writable.
+
+Octal representation
+A numeric mode is from one to four octal digits (0-7), derived by adding up the bits with values 4, 2, and 1.
+Any omitted digits are assumed to be leading zeros.
+nnnn
+The first digit selects the set user ID (4) and set group ID (2) and sticky (1) attributes.
+4 - read
+2 - write
+1 - execute
+0755 -rwxr-xr-x
+0644 -rw-r--r--
+0400 -r--------
+Examples
+
+Use "ls -l" to see information about a file and "ls -ld" to see information about a directory.
+
+drwx------ 2 dowdle dowdle 4096 Jan 31 01:04 /home/dowdle
+
+-rwsr-xr-x 1 root root 19904 Jan 6 2007 /usr/bin/passwd
+
+drwxrwsr-x 6 root project 4.0K Jan 23 22:06 project_compiler
+ 
+You will notice that there are:
+10 placeholders
+The first is for the type of object
+d = directory
+- = file
+b = block device
+c = character device
+l = symbolic link
+s = socket
+p = named pipe
+
+The following 9 are broken up into
+user / owner
+read
+write
+execute
+group
+read
+write
+execute
+other (everyone else)
+read
+write
+execute
+
+Device files in /dev are a little different and have major and minor driver attributes
+
+Another thing to take into account is that the execution bit is overloaded to include setuid, setgid, and sticky.
+ 
+link count
+owner
+group owner
+size
+modification date
+object name
+umask - File creation mask
+
+Built-in bash command used to set the default create mode of files and directories
+
+Example:
+[root@kvm-63 ~]# umask
+0022
+[root@kvm-63 ~]# touch file
+[root@kvm-63 ~]# ls -l file
+-rw-r--r-- 1 root root 0 Feb 2 20:46 file
+[root@kvm-63 ~]# rm file
+rm: remove regular empty file `file'? y
+[root@kvm-63 ~]# umask 0577
+[root@kvm-63 ~]# touch file
+[root@kvm-63 ~]# ls -l file
+--w------- 1 root root 0 Feb 2 20:47 file
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 9: PACKAGE MANAGEMENT ---------------------------------------------------------------------------------
+
+LaUSAH REFERENCE - Chapter 12, Software Installation and Management, Section 12.5, Managing Packages (pg 381)
+TLCL REFERENCE - Chapter 14, Package Management
+RHEL75 - Systems Administators Guide, Chapter 9, Package Management (PDF in week 5 content)
+
+
+What you may already know
+
+How do you install software on Microsoft Windows?
+How do you tell what software is installed on Microsoft Windows?
+How about on Mac OS X?
+Using rpm - lower level tool written in C
+
+Query packages:
+-q, -qi (info), -qd (docs), -qc (configs)
+-qa : query all
+-qf - query file, what package a file came from
+-ql - query list, list files from a package
+Verify packages: -V, no output is good
+S file Size differs
+M Mode differs (includes permissions and file type)
+5 MD5 sum differs
+D Device major/minor number mismatch
+L readLink(2) path mismatch
+U User ownership differs
+G Group ownership differs
+T mTime differs
+Install software: -ivh (verbose with hashmarks)
+Upgrade: -Uvh, -Fvh
+Remove: -e
+Arch: rpm -qa --qf "%{n}.%{arch}\n"
+Special flags: --force, --nodeps, --justdb, --rebuilddb
+Using yum - higher level tool written in python
+
+install, localinstall
+update, localupdate, check-update
+remove or erase
+groups : grouplist, groupinstall
+list : installed, updates
+info {package-name}
+clean : all, packages, metadata
+provides or whatprovides
+search
+repolist
+Files:
+/etc/yum.conf : exclude=whatever*
+/etc/yum.repos.d/*.repo : enabled=0/1, gpgcheck=0/1
+/var/cache/yum/
+Where to find additional software
+
+Compared to Linux distributions like Fedora and Debian (Ubuntu), "Enterprise Linux" offers considerably less packages / software and what is there is probably noticeably older and getting older all the time... with the 7 to 10 year life span.  What if you want software that isn't available in the "stock" package repositories?
+
+Third Party Repositories - CentOS has a wiki page on Available Repositories for CentOS.  EPEL (Extra Pckages for Enterprise Linux) is done by the Fedora folks.  Other repositories exist mainly to provide fresher web stacks (Python, Perl, PHP, MySQL / MariaDB, etc) including the Red Hat's SCL (Software CoLlections repository that CentOS rebuilds (side-by-side installs under /opt).  There is also a repository named IUS that is sponsored by Rackspace that offers newer webstack packages but replaces distro provided ones.
+
+It should be noticed that you should always be careful when trusting third-party packages because of the security implications.
+
+Lastly, it is always possible to install software from source.  Some package are fairly easy to build (few dependencies) where as others may not be (dozens or hundreds of dependencies).  Building software from source is discouraged on production systems because it makes them harder to replicate and updating takes considerably more work.  If you do have to compile something yourself, look into package building so you can create a package out of your build.
+
+Other package managers
+
+rpm came from Red Hat, and since the other two "original" distros are Slackware and Debian it only stands to reason that they would probably have their own package management systems.
+
+Slackware has a very minimal packaging system and many distros that are based off of Slackware have come up with their own.
+
+Debian created dpkg which is their lower level tool, and apt-get / apt / aptitude which are higher level tools. Their packages end with the .deb extension.
+
+rpm / dpkg and yum / apt-get certainly are not the end-all-be-all systems. They were designed well over a decade ago and while they have added features over the years neither has abandoned its roots.
+
+Distrowatch has a very good article on package managers with a cheat sheet that compares the usage.
+There are some alternatives to package managers that may be better for certain use cases or hard-to-package software.  These include appimage, snappy, flatpak and ostree.
+Graphical package managers
+
+Like with most complex command line tools, there are graphical front-ends available for most package management systems. The most popular one for .deb based systems is Synaptic. For .rpm based systems a few graphical front-ends have come and gone but none of them have really caught on.
+
+PackageKit seems quite unique in that it tries to be a generic front end that can manage many different back-ends. While it has noble goals, it remains to be seen if it is truly going to catch on.
+Distro Agnostic Packaging?
+
+There are several efforts to make distro agnostic software packaging.  Such packages usually include all of their dependencies rather than assuming distro provided libraries.  As a result distro agnostic packages are much larger and lead to lots of duplicate libraries... but they do offer a lot of convenience for software packagers.  Three of the most popular systems are Snappy (developed by Canonical), FlatPak (developed by Red Hat / Fedora) and AppImage (the oldest).
+
+Additional Resources
+
+Learn Linux, 101: RPM and YUM package management
+http://www.ibm.com/developerworks/linux/library/l-lpic1-v3-102-5/index.html
+
+Distrowatch's Package Management Cheatsheet file
+http://distrowatch.com/dwres.php?resource=package-management
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 10: PROCESSES AND RESOURCE MANAGEMENT ---------------------------------------------------------------------------------
+
+LaUSAH REFERENCE - Chapter 5, Controlling Processes
+TLCL REFERENCE - Chapter 11, Processes
+RHEL7.6 SAG, Chapter 20, System Monitoring (PDF in content)
+
+What you may already know
+
+How do you manage processes on Windows and Mac?
+What is the init process?
+
+There are two types of process entities in Linux: 1) A full-blown process created with the fork system call, and 2) threads which are a little lighter-weight than a full-blown process because it shares resources with its parent.  Threads are created with the clone system call and the use of a threading library.
+
+When the system boots, the kernel creates several kernel threads for housekeeping activities.  Then it starts the init process which has a process ID number of 1.  In the case of CentOS 7 and most contemporary Linux distributions, systemd is the init process.  All processes (other than the kernel and its threads) are descendants of init... init is the "mother of all processes".
+
+What is a PID?
+
+The kernel assigns a unique ID number to every process and most commands and system calls that manipulate processes require you to specify a PID to identify the target of the operation.  PIDs are issued sequentially.
+
+What is process ownership?
+
+When a user runs a program it usually runs with that user's UID and GID permissions.  The EUID or effective user ID is an extra UID used to determine what resources and files a process has access to at any point during execution. 
+
+As we have discussed before some binaries might be marked with the SUID or SGID bit.  A SUID/SGID program may only need elevated permissions for a few system calls and uses the EUID as a method to raise and lower access as needed.
+
+What is a priority and niceness?
+
+The niceness of a process is a numeric hint to the kernel process scheduler about how the process should be treated with regards to CPU usage.  The common range of allowable values is -20 (most favorable scheduling) to 19 (least favorable).  A child process inherits the niceness value of its parent.
+
+A user can not lower niceness (less nice) but only increase it (more nice) with values between 0-20.  The root user can alter niceness in both directions.
+
+The nice command is used to start a program at a specified niceness.  The renice command is used to alter niceness.
+
+Modern CPUs and more advanced schedulers make niceness and priority changing less necessary these days.
+
+What is a process status?
+
+D    Uninterruptible sleep (usually IO)
+R    Running or runnable (on run queue)
+S    Interruptible sleep (waiting for an event to complete)
+T    Stopped, either by a job control signal or because it is being traced.
+W    paging (not valid since the 2.6.xx kernel)
+X    dead (should never be seen)
+Z    Defunct ("zombie") process, terminated but not reaped by its parent.
+
+(man ps)
+
+What are signals? (man 7 signal or kill -l [list])
+
+Signals are process-level interrupt requests.  If a process is working properly and has been written to do certain things upon certain signals it can catch and respond.  One common signal is 15 / SIGTERM which is where a program is asked to quit.  Another is signal 9 / SIGKILL which is usually used when a program is not responding to 15.
+
+Signals described in the original POSIX.1-1990 standard.
+
+Signal	Value	Action	Comment
+SIGHUP	1	Term	Hangup detected on controlling terminal or death of controlling process
+SIGINT	2	Term	Interrupt from keyboard
+SIGQUIT	3	Core	Quit from keyboard
+SIGILL	4	Core	Illegal Instruction
+SIGABRT	6	Core	Abort signal from abort(3)
+SIGFPE	8	Core	Floating point exception
+SIGKILL	9	Term	Kill signal
+SIGSEGV	11	Core	Invalid memory reference
+SIGPIPE	13	Term	Broken pipe: write to pipe with no readers
+SIGALRM	14	Term	Timer signal from alarm(2)
+SIGTERM	15	Term	Termination signal
+SIGUSR1	30,10,16	Term	User-defined signal 1
+SIGUSR2	31,12,17	Term	User-defined signal 2
+SIGCHLD	20,17,18	Ign	Child stopped or terminated
+SIGCONT	19,18,25	Cont	Continue if stopped
+SIGSTOP	17,19,23	Stop	Stop process
+SIGTSTP	18,20,24	Stop	Stop typed at tty
+SIGTTIN	21,21,26	Stop	tty input for background process
+SIGTTOU	22,22,27	Stop	tty output for background process
+
+Commands you'll want to learn
+
+ps : auxwww
+pstree : -nup
+kill : -15 is default, -9 is handy
+top : M, P, u
+/proc
+sysstat service : monitors load every 10 minutes
+sar
+Developers and advanced users should check out strace
+Settings that affect user resource usage
+
+/etc/security/limits.conf
+
+#Each line describes a limit for a user in the form:
+#
+#<domain> <type> <item> <value>
+#
+#Where:
+#<domain> can be:
+# - an user name
+# - a group name, with @group syntax
+# - the wildcard *, for default entry
+# - the wildcard %, can be also used with %group syntax,
+# for maxlogin limit
+#
+#<type> can have the two values:
+# - "soft" for enforcing the soft limits
+# - "hard" for enforcing hard limits
+#
+#<item> can be one of the following:
+# - core - limits the core file size (KB)
+# - data - max data size (KB)
+# - fsize - maximum filesize (KB)
+# - memlock - max locked-in-memory address space (KB)
+# - nofile - max number of open files
+# - rss - max resident set size (KB)
+# - stack - max stack size (KB)
+# - cpu - max CPU time (MIN)
+# - nproc - max number of processes
+# - as - address space limit
+# - maxlogins - max number of logins for this user
+# - maxsyslogins - max number of logins on the system
+# - priority - the priority to run user process with
+# - locks - max number of file locks the user can hold
+# - sigpending - max number of pending signals
+# - msgqueue - max memory used by POSIX message queues (bytes)
+#
+#<domain> <type> <item> <value>
+#
+@student hard nproc 75
+@student hard memlock 50000
+@student hard fsize 500000
+@student hard data 50000
+@student hard nofile 500
+@student hard locks 500
+@student hard cpu 60
+@student hard memlock 200000
+@student hard priority 2
+@student hard as 500000
+Disk Management
+
+Bad things happen when a partition or disk gets full. Therefore it is important that you learn how to identify disk availability problems and resolve them when needed. Two commands that you'll mainly use are:
+
+df: -h and -i are most common flags
+du: -s and -h are the most common flags
+
+The desire to control disk and inode use by users is what lead to the creation of user and group disk quota systems.
+cgroups and systemd
+
+Several years ago the Linux kernel added something called cgroups (control groups) but they were difficult to understand and use so they have not been widely used.
+
+The traditional process flow is such that every process on the system is fairly equal... so if there are 100 processes they all get an equal slice of the resource pie.  With cgroups that model changes and a cgroup becomes an additional unit the scheduler understands.  This allows related processes to be grouped/scheduled together making it harder for any process and its children to bog the system down.  It also has the added benefit that a cgroup is more easily and reliably killed than a bunch of individual processes.
+
+Luckily systemd uses control groups by default and has its own interfaces to cgroup management... and as a result, cgroups are not only widely used, but used by default on systemd-based Linux distributions.
+
+Here is a 3.5 minute video that shows systemd's cgroup features (starting at 1:13):  webm or mp4
+
+or https://www.youtube.com/watch?v=-25oWssr9WI
+
+And here is an optional video for anyone wanting to learn more about cgroup management with systemd from the recent linux.conf.au 2017: Managing performance parameters through systemd (YouTube)
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 11: SYSTEMD AND SERVICE MANAGEMENT ---------------------------------------------------------------------------------
+
+Alternative init systems
+
+There are other multiple init systems used by the various Linux distributions. Some distributions, particularly those styled after BSD, may use a single config file that has to be updated whenever services are added/removed.
+
+A former Canonical (the company that sponsors the Ubuntu Linux distribution) employee named Scott James Remnant created upstart.  Ubuntu historically had a SysV-based init system but switched to upstart several releases ago.
+
+Fedora historically used a SysV-based init system.  After upstart came out, they switched to it... although at the time upstart was not very complete and was primarily configured in SysV-compatibility mode.
+
+5+ years ago, Red Hat employee and Fedora developer Lennart Poettering did a survey of the various init systems available for various flavors of Unix/Linux.  He compared features and performance and then created a new init system named systemd.  systemd is designed to be a modern init system specifically for Linux... and as such it takes advantage of some Linux-only features... which makes it less portable.  Some advanced things that systemd does is parallel execution, socket and dbus service activation, automatic cgroup resource management / scheduling, and multi-seat support.  It has a system boot profiler with graphing and by disabling unneeded (and / or slow) services, you can greatly speed up your boot times.  systemd has had "feature creep" set in and it has expanded beyond traditional init features.  Another one of its goals is to do common system configuration (hostname, file system mounting, etc) and do it in a distribution agnostic way.  systemd also has man security enhancement features.
+
+Many distributions have switched to systemd including all of the top, mainstream distributions like RHEL, Fedora, Debian, Ubuntu, Mint, Arch, etc.  gentoo defaults to a different init system named OpenRC.  A group of disgruntled-over-systemd users forked Debian and created Devuan.
+
+systemd
+
+cgroups - As I talked about near the end of the Process and Resource Management lecture, systemd is an enabler for cgroups and starts everything in a cgroup.  As a result the resource usage of CPU, RAM, and DISK are dynamically tunable (network coming in the future).  cgroups makes it easier and faster to reliably stop services.
+
+journald - systemd decided to take on the logging facilities and as a result of the logging system being integrated into the init system and being able to have better access to the kernel, it can log all kernel messages including full startup and shutdown... a feat that was previously impossible.  It also uses a signle binary log file with database like functionality.  You can still run a traditional syslog program in parallel if desired to get the old-school, standard single log file per service text logs.  more abut logging in a separate lecture.
+
+unit and target files - The traditional / original Unix / Linux init system SysVinit used shell scripts to control all services and there are many drawbacks.  systemd abandoned shell scripts and has much smaller, declarative configuration files named unit files.  SysVinit init had runlevels.  systemd abandoned runlevels and uses target files instead.  Available targets are emergency, rescue, multi-user (text-console only) and graphical (like multi-user but with a graphical login added).
+
+core os concept - systemd decided to go beyond the strict boundaries of the traditional init system to incorporate more features that made sense for a system trying to make services and resources manageable.  The expansion of features has been dubbed, "Core OS" (not to be confused with the CoreOS Linux distribution) in that it tries to make common tasks the same across all distributions that use systemd.  There used to be several different programs used by distros for such things as logging in, managing user sessions, watchdog, cron, logging, setting the hostname etc.  This the most contentious aspect of systemd as some users think it has gone to far.
+
+systemd programs / commands
+
+The main control program for systemd is systemctl.
+
+systemctl --full --all (lists everything)
+systemctl enable {servicename}
+systemctl disable {servicename}
+systemctl status {servicename}
+systemctl start {servicename}
+systemctl stop {servicename}
+systemctl mask {servicename (sysmlinks to /dev/null)
+systemctl get-default (shows default target)
+systemctl set-default {targetname} (changes the default target)
+sysmtectl isolate {targetname} (change target)
+sytemctl edit (add drop-in files for service customization)
