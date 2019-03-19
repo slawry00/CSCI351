@@ -19,6 +19,9 @@ TOC:
 18. SYSTEM LOGS AND MONITORING
 19. AUTOMATION WITH CRON
 20. EMAIL SERVER INTRODUCTION
+21. QUIZ 1 ANSWERS
+22. QUIZ 2 ANSWERS
+23. QUIZ 3 ANSWERS
 -----------------------------------------------------------------------------------------------------------------------------
 LECTURE 1: UNIX/LINUX HISTORY---------------------------------------------------------------------------------
 In the Beginning
@@ -1786,3 +1789,348 @@ Email Related Configs
 /etc/aliases - global aliases and forwards
 ~/.foward - user defined aliases and forwards
 /etc/postfix/* - postfix config location - since student VMs have Postfix installed
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+QUIZ 1 ANSWERS ---------------------------------------------------------------------------------
+
+01) What day did the UNIX universe start? (aka EPOCH time)
+a) July 1st, 1961 
+b) January 1st, 1970 <-
+c) January 1st, 1991
+d) July 1st, 1982
+
+02) In what directory are global configuration files stored?
+a) /root
+b) /proc
+c) /dev
+d) /etc <-
+
+03) Which Linux distribution does Canonical’s Ubuntu derive from?
+a) Debian <-
+b) Slackware
+c) Novell
+d) Red Hat
+
+04) Which distribution does CentOS derive from?
+a) Red Hat Enterprise Linux <-
+b) SUSE Enterprise Server
+c) It is one of the three top level distros
+d) Scientific Linux
+
+05) What directory contains virtual dirs and files that are a glimpse into the kernel's brain?
+a) /etc
+b) /var/virt
+c) /proc <-
+d) /dev
+
+06) How many partitions can the default GPT partition table hold?
+a) 8
+b) 128 <-
+c) 26
+d) 512
+
+07) How does "Free Software" differ from "Open Source"?
+a) The two terms are completely interchangeable
+b) Open Source does not use the GPL license
+c) One is about freedom and the other is about a development model <-
+d) Free software is always free in cost
+
+08) Does the root user have a home directory? (Hint: If unsure, look in /etc/password)
+a) Yes, /var/root
+b) Yes, /root <-
+c) Yes, /home/root
+d) No
+
+09) What makes a file or directory "hidden" from the perspective of ls?
+a) The dirs/files that begin with a dot (.) <-
+b) The dirs/files are marked as temporary
+c) Recently deleted files
+d) The contents of the lost+found directory
+
+10) Who started the GNU Project, started the Free Software Foundation and wrote the GPL?
+a) Linus Torvalds
+b) Richard M. Stallman <-
+c) Andrew S. Tanenbaum
+d) Eric S. Raymond
+
+11) What three Linux distributions do most other distributions derive from?
+a) Debian, Ubuntu and Red Hat
+b) Slackware, Debian and Novell
+c) Novell, Slackware, and Red Hat
+d) Debian, Red Hat and Slackware <-
+
+12) Where is the user's encrypted password stored?
+a) /etc/group
+b) /etc/shadow <-
+c) /etc/passwd
+d) ~/.password
+
+13) What kind of partition lets you get past the 4 primary partition limit of MBR/ms-dos?
+a) Extended <-
+b) GPT partition
+c) LBA partition
+d) Primary partition
+
+14) Man page section 1 contains what type of man pages?
+a) File formats and conventions
+b) System calls
+c) Executable programs <-
+d) Kernel routines
+
+15) What do you type on the keyboard to start a search in the less screen reader?
+a) / <-
+b) h
+c) ^q
+d) ^c
+
+16) Who is the creator of Minix, a former long-time CS professor and text-book author?
+a) Eric S. Raymond
+b) Andrew S. Tanenbaum <-
+c) Richard M. Stallman
+d)  Linus Torvalds
+
+17) Which program is used to format an existing partition with a filesystem?
+a) mkfs.{fstype} <-
+b) fdisk
+c) fscreate
+d) sfdisk
+
+18) How many Linux distributions are there?
+a) 12
+b) About 100
+c) 76
+d) 500 or more <-
+
+19) One fault of RAID 0 is...
+a) RAID 0 is very slow
+b) If any drive in the RAID goes bad all data is lost <-
+c) It is no longer supported by vendors
+d) You lose too much disk space in the RAID overhead
+
+20) What will typically be the default editor if the EDITOR environment variable is not set?
+a) emacs
+b) nano
+c) vi <-
+d) edln
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+QUIZ 2 ANSWERS ---------------------------------------------------------------------------------
+01) A user can change the ownership of their own files with the chown command.
+a) True
+b) False <-
+
+02) What are the two main types of devices found in the /dev directory?
+a) symlinks and pipes
+b) read-only and writable
+c) block and character <-
+d) physical and virtual
+
+03) Which is NOT true about systemd? 
+a) It breaks compatibility with other UNIX systems by using Linux-only features
+b) It was created by Lennart Poettering who also created Avahi and Pulse Audio
+c) It provides a logging system named journald
+d) It uses large shell scripts for service unit files (.service) <-
+
+04) The /etc/passwd file is world readable.
+a) True <-
+b) False
+
+05) What is the systemd binary used to manage services?
+a) journald
+b) syscontrol
+c) systemctl <-
+d)  chkconfig
+
+06) What configuration file can be used to limit a number of user and group resources?
+a) /etc/users.cfg
+b) /etc/shadow
+c) /etc/security/limits.conf <-
+d) /etc/profile
+
+07) All are true about bash EXCEPT...
+a) It offers tab completion features
+b) It offers command history features
+c) It stands for Bourne Again SHell
+d) It is a single-tasking shell <-
+
+08) All of the following are fields in /etc/passwd except...
+a) Default Shell
+b) GID
+c) UID
+d) Disk Quota <-
+
+09) cgroups are a process scheduling entity used automatically by which init system?
+a) sysvinit
+b) systemd <-
+
+10) What is the default signal sent by the kill command?
+a) 1
+b) 9
+c) 11
+d) 15 <-
+
+11) Which command is used to change permissions on files?
+a) chmod <-
+b) du
+c) df
+d) chown
+
+12) In octal notation, which value represents write?
+a) 1
+b) 2 <-
+c) 4
+d) c
+
+13) In what directory are the yum repository definition (.repo) files stored?
+a) /etc/sysconfig/yum.conf
+b) /etc/yum.conf
+c) /etc/yum.repos.d/ <-
+d) /var/cache/yum/
+
+14) Which command is used to set / change the immutable bit?
+a) lsattr
+b) chmod
+c) filemod
+d) chattr <-
+
+15) 0644 represents which of the following set of permissions?
+a) rwxr-xr-x
+b) rw-r--r-- <-
+c) r-xr--r--
+d) rwx-rw-rw-
+
+16) Which process management application is the most interactive?
+a) pstree
+b) ps
+c) top <-
+d) sysstat
+
+17) rpm can do all of the following EXCEPT...
+a) Verify files installed from packages against its database
+b) Resolve and download all dependencies for package installs <-
+c) Warn you if removing a package will break something else
+d) Tell you what license a package is licensed under
+
+18) What kill signal is used to assassinate a crashed program?
+a) 1
+b) 9 <-
+c) 11
+d) 15
+
+19) rpm stands for...
+a) Redmond Package Manager
+b) Red Hat Package Manager
+c) Relational Package Manager
+d) Rpm Package Manager <-
+
+20) Which systemd target represents text-based / console login?
+a) emergency.service
+b) graphical.target
+c) login.service
+d) multi-user.target <-
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+QUIZ 3 ANSWERS ---------------------------------------------------------------------------------
+01) What program is used to read the systemd journal?
+a) systemctl <-
+b) firewall-cmd
+c) journalctl
+d) zless
+
+02) All of the following programs are part of the bind-utils package except...
+a) host
+b) dig
+c) whois <-
+d) nslookup
+
+03) /etc/hosts is consulted for what type of information?
+a) Network routes
+b) Available network devices
+c) IP to hostname mapping <-
+d) Service names and associated ports
+
+04) The following details are needed for manual network configuration except...
+a) IP address
+b) DHCP server <-
+c) DNS server
+d) Default gateway
+
+05) The GNOME desktop started because the QT license wasn't free enough at the time.
+True <-
+False
+
+06) What port does https typically run on?
+a) 22
+b) 25
+c) 80
+d) 443 <-
+
+07) The -J flag of the tar command provides what compression type?
+a) gzip
+b) jar
+c) zip
+d) xz <-
+
+08) libwrap consults which file first?
+a) /etc/hosts.allow <-
+b) /etc/hosts.deny
+
+09) A match is found in /etc/hosts.allow and a matching rule exists in /etc/hosts.deny ...
+a) Access is allowed <-
+b) Access is denied
+
+10) If a new Linux kernel package is installed, you need to reboot to use the newer kernel?
+True <-
+False
+
+11) Which of the following copy utilities offers file version history?
+a) clonezilla
+b) rdiff-backup <-
+c) scp
+d) rsync
+
+12) What is currently a work-in-progress to replace X11?
+a) Wayland <-
+b) XFree86
+c) MirAcle
+d) GNOME 5
+
+13) If an IP-to-hostname entry is found in /etc/hosts, an external DNS query is still done.
+True
+False <-
+
+14) Which file provides a list of common ports and services?
+a) /etc/sysconfig/iptables
+b) /etc/services <-
+c) /var/spool/services
+d) /etc/ports
+
+15) On subsequent runs, rsync will only transfer changed files and then only the changed pieces.
+True <-
+False
+
+16) If there are no matches found in hosts.allow nor hosts.deny, what happens?
+a) Access is allowed <-
+b) Access is denied
+
+17) You see that there is a directory named /var/log/journal/ and it has contents.  That means?
+a) The systemd journal is in non-persistent mode
+b) rsyslog is not running in parallel with the systemd journal
+c) rsyslog is in database mode
+d) The systemd journal is in persistent mode <-
+
+18) What do you run on a Red Hat-based system to check for and install updates?
+a) yum update <-
+b) yum repolist
+c) apt-get update
+d) rpm -Uvh
+
+19) Where is the nameserver configuration set?
+a) /etc/bind.conf
+b) /etc/services
+c) /etc/networks
+d) /etc/resolv.conf <-
+
+20) The X11 X Window system was created with network transparency in mind.
+True <-
+False
