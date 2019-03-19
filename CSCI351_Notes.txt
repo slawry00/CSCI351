@@ -10,7 +10,15 @@ TOC:
 9. PACKAGE MANAGEMENT
 10. PROCESSES AND RESOURCE MANAGEMENT
 11. SYSTEMD AND SERVICE MANAGEMENT
-
+12. BACKUPS
+13. DESKTOP LINUX
+14. NETWORK CONFIGURATION
+15. PRINTER CONFIGURATION
+16. ACESS CONTROL: LIBWRAP AND TCP-WRAPPERS
+17. FIREWALLS AND IPTABLES
+18. SYSTEM LOGS AND MONITORING
+19. AUTOMATION WITH CRON
+20. EMAIL SERVER INTRODUCTION
 -----------------------------------------------------------------------------------------------------------------------------
 LECTURE 1: UNIX/LINUX HISTORY---------------------------------------------------------------------------------
 In the Beginning
@@ -1024,3 +1032,757 @@ systemctl get-default (shows default target)
 systemctl set-default {targetname} (changes the default target)
 sysmtectl isolate {targetname} (change target)
 sytemctl edit (add drop-in files for service customization)
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 12: BACKUPS ---------------------------------------------------------------------------------
+While there are a number of "backup" applications, both FOSS and commercial / proprietary, the vast majority of them add a bit of overhead to the process as well as have their own obfuscated data storage methods. As a result, a number of simple yet effective file system tools have been developed.
+
+Hard drive sizes have greatly increased over the last few years but backup tapes have not had the same storage capacity jumps. As a result, I prefer to backup to hard disk rather than tape. Most advanced tape backup systems now recommend having an intermediate storage system usually based on hard disks so you can backup more quickly (freeing the backup source sooner) and then spool to tape at a usually slower rate.
+
+Some FOSS file-based backup applications include:
+
+BackupPC - http://backuppc.sourceforge.net/
+Backula - http://www.bacula.org/
+Zmanda - http://www.zmanda.com/ (commercially supported Amanda)
+tar - The GNU version of the tar archiving utility
+
+tar -cvzf /desired/destination/path/and/filename.tar.gz /path/to/backup
+tar -cvJf /desired/destination/path/and/filename.tar.xz /path/to/backup
+scp - Secure copy (remote file copy program), overwrites destination files
+
+scp file1 file2 dir1/ dir2/ user@remotehost:/full/path/to/backup/directory/
+
+Common flags:
+-l - limit rate specified in Kbits/s
+-P - port
+-p - preserves modification times, access times, and modes from the original file
+-r - recursively copy
+rsync - A fast, versatile, remote (and local) file-copying tool
+
+rsync is a file-based mirroring program that can use the local filesystem or a remote filesystem for the destination. If a remote system is selected then the transmission takes places over encrypted ssh. rsync is very efficient and uses an algorithm created by Andrew Tridgell who is best known for his work on samba. The algorithm does not come into play on the first transfer but does upon subsequent transfers... where it will try to only transfer changed files and then only the changed pieces.
+
+The most commonly used flags are:
+-a - archive mode; equals -rlptgoD (no -H,-A,-X)
+-v - verbose
+-S, --sparse - handle sparse files efficiently 
+--delete - delete extraneous files from dest dirs
+--exclude=PATTERN - exclude files matching PATTERN
+--bwlimit=KBPS - limit I/O bandwidth; KBytes per second
+
+Example:
+rsync -avS \
+--progress \
+--delete \
+--exclude=/dev \
+--exclude=/proc \ 
+--exclude=/mnt \
+--exclude=/sys \
+--exclude=/media \
+--exclude=/tmp \
+root@sourcehost:/ \
+/backups/hostname/
+rdiff-backup - A local/remote mirror and incremental backup utility written in python
+
+rdiff-backup tries to combine the best features of mirroring with incremental backup. It also works over a network via ssh.
+
+Example:
+rdiff-backup -v5 --print-statistics    root@esus::/www   /backups-servers/esus/www
+
+Usage:
+http://www.gnu.org/savannah-checkouts/non-gnu/rdiff-backup/examples.html
+Imaging Software - bit-by-bit copy rather than file-based
+
+Disk image-based backup utilities are really good for cloning systems. The main disadvantage of using disk imaging software is that they usually can only backup a partition / disk if it is not in use. Often disk image-backup software is run by booting from an alternative partition or live media.
+ 
+Some FOSS imaging applications include:
+clonezilla (partclone) - http://clonezilla.org/
+dd and ddrescue
+ 
+Some "missing features" in the free programs: 1) Can't mount the image file(s) and alter them and 2) Can't clone a larger to smaller
+There are a number of commercial / closed source products and they include Ghost, Acronis True Image, etc.
+See: http://en.wikipedia.org/wiki/Disk_cloning
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 13: DESKTOP LINUX ---------------------------------------------------------------------------------
+In the Beginning was X
+
+As mentioned in part 3 of Triumph of the Nerds, Xerox (via the researchers at the Palo Alto Research Center) is noted as the original creator of what is known as the modern Graphical User Interface. They created a bitmap based display, the mouse with an on-screen pointer, and networked computers with ethernet which were publicly demoed as early as 1969. Steve Jobs and Apple borrowed all of PARC's ideas, added to and expanded them, and released the Apple Macintosh with MacOS in early 1984.  For more info, see Steven Levy's book, Insanely Great.
+
+The X Window System was created in 1984 at Massachusetts Institute of Technology. The current version is called X11 and was released in 1987.
+
+From the wikipedia article on the X Window System:
+
+In 1987, with the success of X11 becoming apparent, MIT wished to relinquish the stewardship of X, but at a June 1987 meeting with nine vendors, the vendors told MIT that they believed in the need for a neutral party to keep X from fragmenting in the marketplace. In January 1988, the MIT X Consortium formed as a non-profit vendor group.
+
+Since that time the X Consortium disbanded and control changed hands to The Open Group. In May 1999, the Open Group formed X.Org.
+
+The most popular release for the IBM PC was done by XFree86 and it was adopted for many years by most Linux distributions.  After a while many Linux distributors became frustrated with the closed nature of the XFree86 development model and thought that the pace of development was too slow. The XFree86 project made a slight change to their license and required that the XFree86 logo be displayed on any packaging it was included with.
+    
+In April of 2004 X.Org was created as a fork of the XFree86 project and it quickly became the dominant release used by Linux distributions. 
+   
+X11 is more about providing a basic display system that can accommodate input devices and creating a foundation for writing GUI applications that will work both locally and over a network rather than defining specific graphical applications and developer toolkits. As a result the various window managers, desktop managers, and desktop environments have been written using a variety of programming languages and GUI toolkit libraries.  
+Window Managers
+
+twm - One of the first window manager apps that became popular. It became part of X11 with X11R4 and these days it is so basic that it is considered by some as the window manager of last resort.
+  
+fvwm - Robert Nation created the F Virtual Window Manager in 1993 and it was one of the first that featured virtual desktops.  Then came fvwm95 that had a default theme visually similar to Microsoft Windows 95.
+  
+Window Maker - In 1997 Window Maker was released as a clone of the NeXTstep GUI. NeXTstep is what was used as a basis for Mac OS X's GUI environment.
+  
+blackbox - A very light-weight desktop manager written in C++.
+  
+openbox - Originally a fork of blackbox but now completely rewritten in C.  openbox is also a very light-weight desktop manager.
+  
+See also: http://en.wikipedia.org/wiki/Comparison_of_window_managers    
+Desktop Environments
+
+CDE - The Common Desktop Environment was created by a number of commercial Unix vendors in 1993 and became the de facto GUI environment for a number of Unix flavors. The problem was that it was commercial and was based on the commercial GUI toolkit named motif. Sun Microsystems was a holdout and created their own named OpenLook based on a completely different GUI toolkit.
+  
+KDE - The K Desktop Environment was started in 1996 by Matthias Ettrich. He surveyed all of the freely available GUI toolkits and settled on QT from a company in Norway named Trolltech. QT is a C++ multi-platform toolkit that originally cost money if you wanted to make commercial applications with it. After the GNOME Project was started Trolltech created the QT Foundation and dual-licensed QT including a free software friendly license. Trolltech was eventually consumed by Nokia and QT has since been re-licensed under three different licenses... pick the one you want. KDE released version 4.0 in January of 2008.
+    
+GNOME - The GNU Network Object Model Environment desktop environment was originally started by a group of programmers (primarily financially sponsored by Red Hat) who were not happy with the original QT licensing. They also wanted to use C rather than C++. GNOME is based on the GIMP toolkit (GTK).  GNOME decided to change things with GNOME 3 Shell.
+    
+GNOME 3 Shell was release on April 6, 2011.  Fedora was one of the first distributions to ship it.  GNOME 3 requires hardware support / accellerated video although it does have a fallback mode which does not.  GNOME 3 has a searched-based interface and does away with some of the features (thought of as clutter by its developers) from the GNOME 2 series.  Further development of GNOME 2 has stopped and GNOME 3 is the future of GNOME.
+    
+Unity - Ubuntu claimed that they couldn't work well enough with the GNOME 3 development team so they decided drop GNOME 3 and to develop their own interface named Unity.  Unity was expanded from their previous netbook interface design work.  Some people are unhappy with Unity which has lead to a few other projects appearing.
+    
+MATE - MATE is a desktop environment forked from the now-unmaintained code base of GNOME 2. The name derives from yerba mate, a species of holly native to subtropical South America used to prepare a beverage called mate. The renaming is necessary to avoid conflicts with Gnome 3 components.
+    
+Cinnamon - Cinnamon is a fairly new project from the Linux Mint developers that uses the GNOME 3 libraries to create a desktop that is stylisticly a combination of GNOME 2 and GNOME 3.
+    
+XFCE - Olivier Fourdan decided to create a free clone of CDE in 1996 based on the non-free XForms GUI toolkit. Since the toolkit wasn't free enough neither Red Hat nor Debian liked it. Olivier eventually rewrote XFCE in GTK. It is considered a lighter-weight alternative to KDE and GNOME.
+   
+LXDE - The project was started in 2006 by Taiwanese programmer Hong Jen Yee, also known as PCMan, when he published PCManFM, a new file manager and the first module of LXDE.  LXDE has ceased development as the developers have decided to abandon the GTK widget library and switch to QT... and have decided to join forces with the RazorQT project... and now have created LXQT.
+Network Transparency
+
+As previously mentioned, X11 was designed with network transparency in mind and as a result, there are a number of ways to run X11 apps or complete desktop environments remotely.
+
+The easiest way to run an X11 app is to use the X11 tunnelling provided by ssh (ssh -X). Alternatively you can use the xhost utility and properly set the DISPLAY environment variable.
+
+For running complete desktop environments one may use programs like VNC and NX. Many X display managers also speak the X Display Manager Control protocol (XDMCP) although it is not usually turned on by default.  There is even an RDP server for Linux named xrdp.  A very nice fork of NX2 exists named X2Go.
+
+Complete desktops can also be run over ssh with Xnest and Xephyr.
+
+No matter what method you use for remote access, it should work fine over a LAN but perhaps not as well over a WAN or broadband connection due to latency.
+ 
+Red Hat released the SPICE remote KVM-VM (virtual machine) display protocol under the GPL v2 in January 2010 and it is hoped it gets adapted to a general purpose remote display protocol.
+ 
+The Future?
+    
+One complaint about X11 is that there are too many layers and that creating efficient software (especially games) is hard.  Wayland is a fairly new project with a goal providing an efficient alternative to X11.  It is still early in development and it remains to be seen how well it will do. Canonical initially seemed to be responsive to Wayland but decided to create their own display system (Mir) to better serve their needs with regards to one interface for every device.  Mir, which recently announced the release of version 1.0,  seems to be built on top of Wayland.
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 14: NETWORK CONFIGURATION---------------------------------------------------------------------------------
+What network card do I have?
+
+lspci | grep -i net (lspci is provided by the pciutils package)
+(will work in KVM VM [or physical machine] but not OpenVZ container)
+ 
+Example output:
+[root@dowdle ~]# lspci | grep -i net
+00:03.0 Ethernet controller: Red Hat, Inc Virtio network device
+Network basics
+
+To configure the network on a computer you usually need to know a few pieces of information:
+
+IP address
+Default gateway
+Network mask
+DNS
+If your network uses DHCP (Dynamic Host Configuration Protocol) you can use a dhcp client application and have your computer get all of the needed network settings from the DHCP server.
+Tools to configure the network
+
+nmcli - https://www.youtube.com/watch?v=6xfSUdxeasA
+nmtui - https://www.youtube.com/watch?v=E7gWVZrZbUY
+nm gui - https://www.youtube.com/watch?v=QJd3AJW05Aw (applets for KDE and GNOME)
+Lower Level Tools
+
+ip, ifconfig
+
+How to set the system hostname
+
+hostnamectl set-hostname {host.domain.tld}
+
+Example configurations
+
+[root@openvz2 ~]# cat /etc/sysconfig/network
+NETWORKING=yes
+HOSTNAME=openvz2.cs.montana.edu
+ 
+[root@openvz2 ~]# cat /etc/sysconfig/network-scripts/ifcfg-eth0
+DEVICE="eth0"
+ONBOOT=yes
+TYPE=Ethernet
+BOOTPROTO=none
+IPADDR=153.90.127.196
+NETMASK=255.255.255.0
+GATEWAY=153.90.127.254
+
+Please note that /etc/hosts is a special file in that it can be used as a sort of "local DNS". /etc/hosts is usually consulted before the specified nameservers and /etc/hosts can be used to override DNS lookups if desired.  /etc/hosts sample contents:
+ 
+[dowdle@csci351 ~]$ cat /etc/hosts
+(examine the output in class)
+DNS configuration is stored in /etc/resolv.conf.  Here is an example /etc/resolv.conf:
+ 
+[sdowdle@csci351 ~]$ cat /etc/resolv.conf
+# Generated by NetworkManager
+search cs.montana.edu coe.montana.edu
+nameserver 153.90.2.15
+nameserver 153.90.2.1
+How does DNS work anyway?
+How DNS Works illustration
+ 
+DNS Related Commands
+ 
+The /usr/bin/host command is part of the bind-utils package. Example:
+ 
+host www.cs.montana.edu
+host 153.90.127.197
+ 
+The /usr/bin/dig command is part of the bind-utils package.  Example:
+ 
+dig MX cs.montana.edu (shows Mail eXchange record)
+dig NS cs.montana.edu (shows NameServer record)
+ 
+The /usr/bin/nslookup command is part of the bind-utils package.  Example:
+ 
+nslookup www.cs.montana.edu
+
+nslookup interactively:
+
+[dowdle@dowdle ~]$ nslookup
+> server 8.8.8.8
+Default server: 8.8.8.8
+Address: 8.8.8.8#53
+> www.montanalinux.org
+Server: 8.8.8.8
+Address: 8.8.8.8#53
+
+Non-authoritative answer:
+Name: www.montanalinux.org
+Address: 69.60.124.50
+> exit
+
+[dowdle@dowdle ~]$
+ 
+The /usr/bin/whois command is part of the jwhois package.  Example:
+[dowdle@csci351 ~]$ whois montanalinux.org
+ whois montanalinux.org
+[Querying whois.pir.org]
+[whois.pir.org]
+Domain Name: MONTANALINUX.ORG
+Domain ID: D33213288-LROR
+WHOIS Server:
+Referral URL: http://www.networksolutions.com
+Updated Date: 2012-08-03T21:30:52Z
+Creation Date: 2000-08-18T21:48:24Z
+Registry Expiry Date: 2017-08-18T21:48:24Z
+Sponsoring Registrar: Network Solutions, LLC
+Sponsoring Registrar IANA ID: 2
+Domain Status: clientTransferProhibited https://www.icann.org/epp#clientTransferProhibited
+Registrant ID: 5991102-NSI
+Registrant Name: SCOTT DOWDLE
+Registrant Organization:
+Registrant Street: 704 Church Street
+Registrant City: Belgrade
+Registrant State/Province: MT
+Registrant Postal Code: 59714
+Registrant Country: US
+Registrant Phone: +1.4063880827
+Registrant Phone Ext:
+Registrant Fax:
+Registrant Fax Ext:
+Registrant Email: dowdle@montanalinux.org
+Admin ID: 5991102-NSI
+Admin Name: SCOTT DOWDLE
+Admin Organization:
+Admin Street: 704 Church Street
+Admin City: Belgrade
+Admin State/Province: MT
+Admin Postal Code: 59714
+Admin Country: US
+Admin Phone: +1.4063880827
+Admin Phone Ext:
+Admin Fax:
+Admin Fax Ext:
+Admin Email: dowdle@montanalinux.org
+Tech ID: 5991102-NSI
+Tech Name: SCOTT DOWDLE
+Tech Organization:
+Tech Street: 704 Church Street
+Tech City: Belgrade
+Tech State/Province: MT
+Tech Postal Code: 59714
+Tech Country: US
+Tech Phone: +1.4063880827
+Tech Phone Ext:
+Tech Fax:
+Tech Fax Ext:
+Tech Email: dowdle@montanalinux.org
+Name Server: NS33.WORLDNIC.COM
+Name Server: NS34.WORLDNIC.COM
+DNSSEC: unsigned
+>>> Last update of WHOIS database: 2016-02-23T17:08:12Z <<<
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 15: PRINTER CONFIGURATION---------------------------------------------------------------------------------
+Most Linux distributions use an underlying printing system named the Common UNIX Printing System (CUPS).  Apple even uses CUPS on macOS and in fact hired the primary CUPS developer in 2007.
+
+While CUPS provides a web-based interface typically bound to port 631 (look in /etc/services for reference to "Internet Printing Protocol"), Red Hat-based distributions provide a graphical tool named system-config-printer which generates a CUPS configuration file (/etc/cups/printers.conf).  system-config-printer can be used to configure a locally attached printer as well as a number of different network attached including HP's JetDirect, IPP, and LPR.
+
+Some command line tools for printer information (lpq), job submission (lpr) and management (lprm) come from the cups-client package.
+
+Examine the PDF in the weekly content for screenshots of system-config-printer.  system-config-printer makes very easy to configure a printer.
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 15: ACCESS CONTROL: with tcp_wrapers / libwrap---------------------------------------------------------------------------------
+Security is a process not a product. Securing a system should be done at several layers and not just one. When one thinks of computer security the word "firewall" pops up. I will cover iptables and firewalls on Linux in a future lecture. The topic for today is yet another piece in the security chain referred to as "TCP Wrappers". On most Linux and UNIX systems, TCP Wrappers is provided by a library named libwrap.
+
+ldd prints the shared libraries required by a program. Today we are talking about libwrap so here's some ldd output to show that the sshd binary is linked against libwrap.
+
+Student VM
+[root@kvm-163 ~]# ldd /usr/sbin/sshd | grep wrap
+        libwrap.so.0 => /lib64/libwrap.so.0 (0x00007ffe6c853000)
+
+Yes, it is.  What package does that come from?
+Student VM
+[root@kvm-163 ~]# rpm -qf /lib64/libwrap.so.0
+tcp_wrappers-libs-7.6-77.el7.x86_64
+ 
+What is libwrap?  Here's what the wikipedia page on it says:
+ 
+TCP Wrapper is a host-based networking ACL system, used to filter network access to Internet Protocol servers on (Unix-like) operating systems such as Linux or BSD. It allows host or subnetwork IP addresses, names and/or ident query replies, to be used as tokens on which to filter for access control purposes.
+
+The original code was written by Dutchman Wietse Venema in 1990 to monitor a cracker's activities on the Unix workstations at the Dept. of Math and Computer Science at the Eindhoven University of Technology.[1] He maintained it until 1995, and on June 1, 2001, released it under its own BSD-style license.
+
+The tarball includes a library named libwrap that implements the actual functionality. Initially, only services that were spawned for each connection from a super-server (such as inetd) got wrapped, utilizing the tcpd program. However most common network service daemons today can be linked against libwrap directly. This is used by daemons that operate without being spawned from a super-server, or when a single process handles multiple connections. Otherwise, only the first connection attempt would get checked against its ACLs.
+
+When compared to host access control directives often found in daemons' configuration files, TCP Wrappers have the benefit of runtime ACL reconfiguration (i.e., services don't have to be reloaded or restarted) and a generic approach to network administration.
+
+This makes it easy to use for anti-Worm scripts, such as DenyHosts or Fail2ban, to add and expire client-blocking rules, when excessive connections and/or many failed login attempts are encountered. 
+libwrap is provided by the tcp_wrappers-libs package and includes the following man pages:
+
+[root@kvm-163 ~]# rpm -qd tcp_wrappers-libs | grep man
+/usr/share/man/man5/hosts.allow.5.gz
+/usr/share/man/man5/hosts.deny.5.gz
+/usr/share/man/man5/hosts_access.5.gz
+/usr/share/man/man5/hosts_options.5.gz
+
+Associated files
+
+/etc/hosts.allow
+/etc/hosts.deny
+
+hosts.allow and hosts.deny each have two or more colon-separated fields.
+
+The first field specifies a comma-delimited list of executable names (not services names), possibly with the wildcards ALL and EXCEPT.
+
+The second field contains a comma-separated list of client specifications using IP address, hostname, "trailing dot" networks, "leading dot" domains, or network/netmask pairs. Again, the keywords ALL or EXCEPT are recognized.
+
+When parsing the files, libwrap impliments a "stop on first match" policy so as soon as a line is matched it is implemented and no further action occurs. A matching line in hosts.allow would allow the connection and a matching line in the hosts.deny would deny the connection. First hosts.allow is examined and if not explicitly allowed, hosts.deny is examined. If access is not explicitly denied the connection is allowed by fault of omission as the connection meets no rule criterion. Changes to the access files are effective immediately for all new connections.
+Daemon Specifications
+
+Applications pass name of their executable
+Multiple services can be specified
+Use wildcard ALL to match all daemons
+Examples:
+in.telnetd: 192.168.0.1
+sshd, gdm: 192.168.0.1
+Client Specifications
+
+By IP address
+Full or partial IP addresses
+Rightmost components are treated as zero if omitted
+Example
+192.168.1.
+All hosts within the class C network 192.168.1.0
+By hostname
+Performs a reverse lookup every connection
+Is not always supported
+Examples
+www.cs.montana.edu
+.montana.edu
+By network / netmask
+Specify the complete network address plus netmask
+Netmask must be in the long format
+Example
+192.168.0.0/255.255.255.0
+By network name
+Network names from /etc/networks or NIS
+Does not work together wtih usernames
+Example
+@mynetwork
+Macro Definitions
+
+Host name macros
+LOCAL
+KNOWN, UNKNOWN, PARANOID
+Host and service macro
+ALL
+EXCEPT
+Can be used for client and service list
+Can be nested
+ALL - Always matches all hosts and all services
+LOCAL - All hosts without a dot in their name
+UNKOWN - All hostnames that cannot be resolved
+KNOWN - All hostnames that can be resolved
+PARANOID - All hostnames where forward and reverse do not match
+
+The EXCEPT operator can be used in daemon and client lists to exclude some hosts from your match. It can be nested.
+
+Examples:
+/etc/hosts.allow
+sshd: ALL EXCEPT .badhacker.org EXCEPT trusted.badhacker.org
+
+/etc/hosts.deny
+sshd: ALL
+
+Because of the catch-all rule in hosts.deny this ruleset would allow only those who have been explicitly granted access to ssh into the system. In hosts.allow we grant access to everyone except for hosts in the badhacker.org domain but to this rule we make an exception... we allow the host trusted.
+Extended Options
+
+The version of tcp_wrappers included in RHEL / clones supports the extended options documented in the hosts_options (5) man page. One of the more commonly used options is spawn which closes the connection and executes an external program when the rule is matched.
+
+The options utilize special % replacements
+%c - Client information (user@host)
+%s - Server information (server@host)
+%h - The client's hostname (IP address if unresolved)
+%p - Server PID
+The % expansions which are supported are documented in the hosts_access (5) man page. Use the command man 5 hosts_access so you do not get the hosts_access (3) man page by mistake.
+
+Syntax: daemon_list: client_list [:opt1 :opt2...]
+
+Example:
+in.telnetd: ALL : spawn echo "login attempt from %c to %s" | mail -s warning root
+Example allow and deny files
+
+# /etc/hosts.allow
+vsftpd: 192.168.0.
+in.telnetd, sshd: .cs.montana.edu 192.168.2.5
+
+# /etc/hosts.deny
+ALL : ALL
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 16: FIREWALLS AND IPTABLES---------------------------------------------------------------------------------
+
+SERVICES AND PORTS:
+
+Looking at the /etc/services file you will see a long list of the most well known services. Ports 1024 and lower are considered to be "privileged" ports and traditionally require root privileges to start up software that bind to them.
+
+User's programs can usually bind to any ports 1025 and higher.
+
+Just because a daemon / service is typically associated with a particular port or range of ports does not mean that it has to use those ports. Most applications can be configured to use whatever port(s) desired. Therefore do not assume that if a particular port is in use that a particular app is using it. Remember you are free to name binaries anything you want and sometimes unauthorized users try to be tricky.
+
+IPTABLES OVERVIEW
+
+Filtering is performed by the network stack within the kernel
+Asserts policies at OSI Reference Model layers 2, 3 and 4
+Only packet headers are inspected
+FIREWALLD OVERVIEW
+
+Red Hat introduced a new firewall system with the release of RHEL7, named firewalld
+There is a firewalld GUI named firewall-config and a CLI program named firewall-cmd.
+firewalld supports multiple zones
+USING FIREWALLD
+
+Check to see if firewalld is running: 
+      systemctl status firewalld
+firewalld stores its rules in:
+      /etc/firewalld/zones/public.xml
+
+firewall-cmd --state
+firewall-cmd --get-active-zones
+firewall-cmd --list-all
+
+firewall-cmd --add-service=http
+firewall-cmd --add-service=http --permanent
+firewall-cmd --remove-service=http
+firewall-cmd --remove-service=http --permanent
+
+firewall-cmd --add-port=30000/tcp --permanent
+firewall-cmd --add-port=30000-30010/tcp --permanent
+firewall-cmd --remove-port=30000/tcp --permanent
+firewall-cmd --remove-port=30000-30010/tcp --permanent
+
+firewall-cmd --reload
+firewall-cmd --complete-reload
+firewall-cmd --query-panic
+firewall-cmd --panic-on
+firewall-cmd --panic-off
+
+FIREWALLD SERVICE FILES
+
+firewall-cmd --get-services
+       /usr/lib/firewalld/services/{service-name}.xml
+firewall-cmd --info-service={service-name}
+
+Drop-in Files:
+     /etc/firewalld/services/
+
+FIREWALLD ADVANCED FEATURES
+
+Direct Interface
+Rich Rules
+Lockdown
+IP Sets
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 17: SYSTEM LOGS AND MONITORING---------------------------------------------------------------------------------
+RSYSLOG
+
+Rather than each service / daemon having their own logging features, a general purpose logging service was created.
+RHEL/CentOS provides a package named rsyslog that includes the rsyslogd daemon.
+Most all logs are stored under /var/log/ or within a sub-directory.
+
+SAMPLE /etc/rsyslog.conf
+
+*.info;mail.none;authpriv.none;cron.none /var/log/messages
+authpriv.* /var/log/secure
+mail.* -/var/log/maillog
+cron.* /var/log/cron
+*.emerg *
+uucp,news.crit /var/log/spooler
+local7.* /var/log/boot.log
+
+LOGROTATE
+
+Logrotate allows for the automatic rotation, compression, removal and mailing of log files.
+Logrotate can be set to handle a log file daily, weekly, monthly or when the log file gets to a certain size.
+Normally, logrotate runs as a daily cron job.
+
+LOGROTATE FILES
+
+Runs as a cron job:
+     /etc/cron.daily/logrotate
+Config files:
+     /etc/logrotate.conf (compress)
+      /etc/logrotate.d/* (service specific logrotate configs)
+Note: Most services include a specific logrotate config.
+     [root@sdowdle ~]# rpm -qc httpd | grep logrotate
+   /etc/logrotate.d/httpd
+
+EXAMPLE ROTATED LOGS
+
+[root@esus ~]# ls -lh /var/log/messages* (from older system)
+-rw------- 1 root root 80K Mar 3 08:53 /var/log/messages
+-rw------- 1 root root 12K Feb 27 04:03 /var/log/messages.1.gz
+-rw------- 1 root root 11K Feb 20 04:02 /var/log/messages.2.gz
+
+[root@sdowdle ~]# ls -l /var/log/messages*
+-rw------- 1 root root 464 Mar 6 10:18 /var/log/messages
+-rw------- 1 root root 10089 Mar 4 03:29 /var/log/messages-20120304
+
+LOGWATCH
+
+Logwatch is a customizable, pluggable log monitoring system.
+Runs as a cron job: /etc/cron.daily/0logwatch
+It will go through your logs for a given period and make a report in the areas that you wish with the detail that you wish.
+By default the logrotate package will email the root user a report every morning.
+
+USEFUL COMMANDS
+
+tail - output the last part of files
+     -f flag is for follow... watch a log file as it grows
+grep - search a log file
+zgrep, zless and zcat - for compressed log files
+
+sysstat - provides sar and iostat
+
+sar and iostat enable system monitoring of disk, network, and other IO activity by parsing the binary log data collected every 10 minutes.
+By default, systat runs as a cron job.
+
+journald
+
+RHEL7 introduced the systemd init system. systemd includes a new logging facility named journald.
+journald can be run in parallel with rsyslog or as a replacement for it.
+The command used to access the journald binary log files is journalctl.
+For a regular user to access logging data via journalctl, add them to the adm group.
+
+SESSION VS PERSISTANT
+
+journald by default stores log data in RAM.
+To enable persistant storage just create a directory named journal in /var/log if it doesn't already exist and then restart the systemd-journald service or reboot.
+
+JOURNALD FEATURES
+
+Gets all of boot and shutdown.
+More log data
+kernel, user processes, and from STDIO and STDOUT
+Includes extensive metadata info
+All logged data are shown including rotated logs.
+journalctl offers database-like queries.
+journalct offers some tab completition features.
+Graphing of boot up showing service start up times.
+journalctl Examples
+
+journalctl -n Number
+journalctl -p Priority
+journalctl -u Unit
+journalctl -f (like tail -f)
+journalctl --since=value --until=value
+journalctl --disk-usage
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 18: AUTOMATION WITH CRON ---------------------------------------------------------------------------------
+BACKGROUND
+
+cron is a standard UNIX daemon that runs specified programs at scheduled times.
+anacron is like cron but is aimed at machines that aren't on all the time.
+at is a utility to schedule one-time tasks.
+batch is like at except it only runs one-time jobs when the system load is low.
+
+CRON FILES
+
+crontabs package - 
+     Provides /etc/crontab and periodic directories.
+     [root@dowdle ~]# cat /etc/crontab (examine output)
+cronie package - 
+     An enhanced vixie-cron that provides cron service
+     [root@dowdle ~]# rpm -ql cronie (examine output)
+What is the daemon binary? The service control script? Config files? Documentation?
+
+CRON ACCESS CONTROL
+
+From crontab (1): If the cron.allow file exists, then you must be listed therein in order to be allowed to use this command.
+If the cron.allow file does not exist but the cron.deny file does exist, then you must not be listed in the cron.deny file in order to use this command.
+If neither of these files exists, only the super user will be allowed to use this command.
+
+THUS SAYS THE MAN PAGES
+
+From crontab (5):
+The format of a cron command... each line has five time and date fields, followed by a user name if this is the system crontab file, followed by a command.
+Commands are executed by cron(8) when the minute, hour, and month of year fields match the current time, and at least one of the two day fields (day of month, or day of week) match the current time.
+cron(8) examines cron entries once every minute.
+
+CRONTAB FORMAT
+
+{minute} {hour day-of-month} {month} {day-of-week} {command}
+
+minute - 0-59
+hour - 0-23
+day of month - 1-31
+month - 1-12 (or names)
+day of week - 0-7 
+(0 or 7 is Sun, or use names)
+
+Ranges of numbers are allowed. Ranges are two numbers separated with a hyphen. The specified range is inclusive. For example, 8-11 for an "hours" entry specifies execution at hours 8, 9, 10 and 11.
+
+Lists are allowed. A list is a set of numbers (or ranges) separated by commas.
+Examples: "1,2,5,9", "0-4,8-12".
+
+Step values can be used in conjunction with ranges. Following a range with "<number>" specifies skips of the number's value through the range.
+
+For example, "0-23/2" can be used in the hours field to specify command execution every other hour.
+Steps are also permitted after an asterisk, so if you want to say "every two hours", just use "*/2".
+
+Names can also be used for the "month" and "day-of-week" fields.
+Use the first three letters of the particular day or month (case doesn’t matter).
+Ranges or lists of names are not allowed.
+
+The "sixth" and last field specifies the command to run.
+
+The entire command portion of the line, up to a newline or % character, will be executed by /bin/sh or by the shell specified in the SHELL variable of the cronfile.
+Percent-signs (%) in the command, unless escaped with backslash (\), will be changed into newline characters, and all data after the first % will be sent to the command as standard input.
+
+USING CRONTAB
+
+crontab -l = Lists your cron jobs
+crontab -e = Create / modify your cron jobs
+crontab -r = Deletes all cron jobs
+
+Work with another user's crontab
+crontab -u username -{additional-flag}
+
+EXAMPLES
+
+*/10 * * * * cd /var/yp; make 2>&1 > /dev/null;
+11 2 * * * /usr/bin/wget -O - -q -t 1 http://{some-url}
+
+# run system activity accounting tool every 10 minutes
+*/10 * * * * root /usr/lib64/sa/sa1 1 1
+
+# generate a daily summary of process accounting at 23:53
+53 23 * * * root /usr/lib64/sa/sa2 -A
+
+REVIEW FROM LOGGING MATERIAL
+
+logwatch is run as a cron job. What file is used?
+logrotate is run as a cron job. What file is used?
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 19: EMAIL SERVER INTRODUCTION ---------------------------------------------------------------------------------
+
+What do you use for email?
+
+What is provided by your ISP?
+What is provided by MSU?
+Free services like gmail, Hotmail, Yahoo!Mail?
+What is provided by your work?
+What comprises an email system?
+
+It used to be that you could simply install an SMTP server and you had an "email server". That is not the case any more. There are additional pieces that have been added to email over the last decade or so:
+Virus scanning (ClamAV)
+Spam scanning (SpamAssassin)
+Webmail (RoundCube [ours])
+Mobile Access
+Collaboration tools
+Global Addressbook
+Calendaring
+Documents
+Resources
+To-do lists
+Mailing lists? Usually done by separate software like Mailman (python-based) and Sympa (perl-based)
+Also common these days are backup mailservers for redundancy and relaying mailservers that act as filtering systems.
+How email works
+
+DNS plays a big role in the flow of email. When a user@domain1.com sends an email to user@domain2.com a lot has to be in place for it to work. user@domain1.com's email client talks to its configured SMTP server which accepts the email for delivery. The SMTP server for domain1 has to look up the MX records for domain2. It then attempts to connect to the server with the lowest MX record value in an attempt to deliver it. If for whatever reason it can't deliver it to the first MX server, it will progress to the next MX IP with the lowest value. If all MX servers are unreachable, the SMTP server for domain1 will queue the email and try again later. Typically it tries every 4 hours for 4 days at which point it gives up.
+ 
+What are the MX servers for your email account?  To find out do the following:
+ 
+dig MX yourdomain.tld
+ 
+Does your domain have more than one MX record?  What are their values?
+Various anti-spam tricks
+
+I have seen a lot of crazy stuff done by email admins to reduce their amount of spam.
+
+Adding MX records for servers that don't exist.
+Automatically reject every first attempt (graylisting).
+SPF and DKIM.
+Auto reject systems where you have to get put on a whitelist.
+Email is fundamentally broken and the only thing that can save it... is PKI.
+Looking for a complete package
+
+No Linux distro I'm aware of offers a reasonable email system out of the box. Most offer some/many of the components I mentioned but none of them put them together in any integrated way. As a result a number of third party management / middleware systems have been created.
+
+A few that seem reasonable are:
+Mailscanner (wikipedia)
+Zimbra Collaboration Suite (wikipedia) [ours]
+Zarafa (wikipedia)
+Scalix (wikipedia)
+Citadel (wikipedia)
+Kolab (wikipedia)
+SMTP server software
+
+sendmail
+postfix (installed in our student VMs)
+exim
+qmail
+Things SMTP servers need to be able to do:
+Host multiple domains (virtual hosting)
+Allow for user1@domain1 and user1@domain2 (virtual users)
+Map multiple addresses to a single account (aliases)
+POP and IMAP
+
+Dovecot
+UW imap
+Courier
+Email Client Programs
+
+/usr/bin/mail - Provided by the mailx  program.  Very simple, line oriented client
+alpine - Full-featured TUI client available in EPEL
+
+Email Related Configs
+
+/etc/aliases - global aliases and forwards
+~/.foward - user defined aliases and forwards
+/etc/postfix/* - postfix config location - since student VMs have Postfix installed
