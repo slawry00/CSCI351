@@ -22,6 +22,11 @@ TOC:
 21. QUIZ 1 ANSWERS
 22. QUIZ 2 ANSWERS
 23. QUIZ 3 ANSWERS
+24. Server Apps: Apache Intro
+25. Apache Server apps [Homework 5]
+26. Server Apps: MariaDB Intro
+27. MariaDB Hands-on [Homework 6]
+28. DNS Intro & Hands-on [Homework 7]
 -----------------------------------------------------------------------------------------------------------------------------
 LECTURE 1: UNIX/LINUX HISTORY---------------------------------------------------------------------------------
 In the Beginning
@@ -2134,3 +2139,617 @@ d) /etc/resolv.conf <-
 20) The X11 X Window system was created with network transparency in mind.
 True <-
 False
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 20: Server Apps: Apache Intro ---------------------------------------------------------------------------------
+Brief History of Apache
+
+In the beginning, the father of the World Wide Web (Tim Berners-Lee) created the first web browser (WorldWideWeb) and the first web server (CERN HTTPd) for the NeXTSTEP platform. CERN HTTPd version 0.1 was released in June 1991. It was later ported to other flavors of Unix and OpenVMS. Version 3.0A was the final version released on July 15, 1996.
+
+Next came NCSA HTTPd written by Robert McCool and others. They also had one of the first graphical web browsers that was multi-platform and it was named Mosaic. Most of the NCSA folks left to start up Netscape... and as a result development of NCSA HTTPd and Mosaic languished. Mosaic was eventually licensed to several other browser makers (including Microsoft for Internet Explorer). Development of NCSA HTTPd was eventually stopped in 1998.
+
+Apache started life within the community that was left behind when the development of NCSA HTTPd stalled... and a series of patches for NCSA HTTPd were circulated mostly by email among the various community developers who remained. The group eventually decided to take all of their patches (a patchy server) and start over as the Apache project. Over time any of the original NCSA HTTPd code that remained was replaced. Version 2 of Apache was a substancial rewrite of the 1.x code.
+
+Today Apache continues to hold a prominent marketshare in the web server software market. The Feb. 2019 survey by Netcraft (1,477,803,927 sites, 229,586,773 unique domains) shows Apache with a 26.16% marketshare with Microsoft's IIS server in first place with 28.42%. The third place contender is another free software packaged named nginx with 25.34%.
+Perhaps more revealing are their numbers for "Market share of active sites" where Apache is leading with 30.99% and Microsoft's IIS is a distant fourth with 6.21%. nginx is in second place with 19.60%.
+Also of interest are their numbers for "Market share of the top million busiest sites" where Apache leads with 32.47% and Microsoft's IIS is in third place with 9.03%. nginx is in second place with 26.13%.
+For more information see:
+
+Netcraft's February 2019 Web Server Survey
+https://news.netcraft.com/archives/2019/02/28/february-2019-web-server-survey.html
+Apache Basics
+
+Packages:
+httpd
+httpd-tools
+httpd-manual (if you want the web-based docs)
+mod_* (if you want any additional embedded functionality)
+
+Popular add on packages:
+php*
+mod_perl
+mod_python
+mod_ssl
+
+systemd unit file:
+/usr/lib/systemd/system/httpd.service
+
+Default ports:
+http: 80
+https: 443 (if mod_ssl is installed and configured)
+ 
+Configuration files:
+/etc/httpd/conf/httpd.conf
+/etc/httpd/conf/*
+/etc/httpd/conf.d/*
+
+Binaries: (some from httpd-tools)
+/usr/bin/ab
+/usr/bin/htdbm
+/usr/bin/htdigest
+/usr/bin/htpasswd
+/usr/bin/logresolve
+/usr/sbin/apachectl
+/usr/sbin/htcacheclean
+/usr/sbin/httpd
+/usr/sbin/httpd.worker
+/usr/sbin/httxt2dbm
+/usr/sbin/rotatelogs
+/usr/sbin/suexec
+
+Logs:
+/etc/logrotate.d/httpd
+/var/log/httpd/access_log, /var/log/httpd/error_log
+
+Working directory:
+/var/www
+
+Man pages:
+/usr/share/man/man1/ab.1.gz
+/usr/share/man/man1/htdbm.1.gz
+/usr/share/man/man1/htdigest.1.gz
+/usr/share/man/man1/htpasswd.1.gz
+/usr/share/man/man1/logresolve.1.gz
+/usr/share/man/man8/apachectl.8.gz
+/usr/share/man/man8/htcacheclean.8.gz
+/usr/share/man/man8/httpd.8.gz
+/usr/share/man/man8/rotatelogs.8.gz
+/usr/share/man/man8/suexec.8.gz
+
+The httpd-manual package contains a complete manual and reference guide that can also be found:
+http://httpd.apache.org/docs/2.4/
+Common configuration options
+
+DocumentRoot - /var/www/html
+UserDir - ~username
+ScriptAlias - Defines where scripts can run from
+          /var/www/cgi-bin
+Access controls with
+Directory - Per directory settings
+DirectoryIndex - What file is shown if directory is requested
+index.html
+index.php
+AccessFileName
+.htaccess (dynamic config changes)
+.htpasswd
+Location
+Complete customization of logging and error pages
+VirtualHost
+Also of interest
+
+1) A nice write-up on the 25th anniversary of the WWW from Dec. 2015
+2) Tim Berners-Lee's Three challenges for the web from Mar. 2017 which includes:
+i. We’ve lost control of our personal data
+ii. It’s too easy for misinformation to spread on the web
+iii. Political advertising online needs transparency and understanding
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 21: Brief History of Apache
+Server apps: Apache hands-on [Homework 5] ---------------------------------------------------------------------------------
+
+Goals for this hands on (aka Homework 5)
+
+We are going to do a few of the most common Apache configuration changes:
+
+Verify that apache (httpd) is installed and running
+We are going to enable user directories which allows users to create a directory within their home directory that apache can access with a ~username reference (Example: http://www.cs.montana.edu/~sdowdle)
+We are going to create a virtualhost as an example of a single apache server hosting multiple domain names
+Lastly we are going to install PHP and make sure it is working with apache
+All work is done on your own student VM.  Note, when you see "xx"  or "lastname" below,  you'll want to alter the content to reflect your own information.
+
+Getting Started
+
+Is apache installed? (rpm -q httpd)  If not, install it (yum install httpd).
+
+Is it set to run?  (systemctl status httpd.service)  If not, set enable it (systemctl enable httpd.service).
+Is it running?  (systemctl status httpd.service)  If it isn't running, start it. (systemctl start httpd.service)
+
+Verify your web server is working from the course server (links http://kvm-dowdle) [your name]
+
+Refresher on firewalld
+Did it work?  It shouldn't have because we have not opened up our VM's firewall yet.  
+     firewall-cmd --list-all (shows what's open so far, shouldn't see http or https yet)
+     firewall-cmd --add-service=http ; firewall-cmd --add-service=http --permanent
+     firewall-cmd --add-service=https ; firewall-cmd --add-service=https --permanent
+     firewall-cmd --list-all (Look good now?)
+
+Try again:
+     links http://kvm-dowdle [your name]
+Working now?
+
+What showed up?
+
+Look at /etc/httpd/conf.d/welcome.conf and do what it says to disable the welcome page.
+
+Restart apache (systemctl restart httpd)
+
+Now browse to it again (links http://kvm-dowdle) [your name]
+
+What changed?
+
+Create an index page for your DocumentRoot:
+     nano -w /var/www/html/index.html
+Put inside of it "This is the web page for the default domain".
+
+UserDir
+
+Make a backup copy of your /etc/httpd/conf.d/userdir.conf file.
+Edit the /etc/httpd/conf.d/userdir.conf file. Find the line that says:
+UserDir disable
+...and add a # to the front of it. Find the line that says:
+#UserDir public_html
+...and remove the comment.
+SELinux Booleans that need to be changed:
+      getsebool -a | grep httpd
+      Need to enable httpd_enable_homedirs and httpd_read_user_content
+           setsebool -P httpd_enable_homedirs on
+           setsebool -P httpd_read_user_content on
+
+Restart apache (systemctl restart httpd.service)
+Now create a public_html directory in one of your user directory as your user
+mkdir /home/lastname/public_html
+Make sure the permissions on your user's home directory are at least 711.
+Make sure the permissions on the public_html directory are at least 755.
+Create an index.html page inside of public_html.
+Browse to it:
+     links http://kvm-lastname/~lastname
+VirtualHost
+
+We will create a fake (i.e. using /etc/hosts for DNS resolution) host / domain named www.testdomain1.com.
+ 
+Edit the /etc/hosts file and add the following line:
+ 
+192.168.122.1xx       www.testdomain1.com          testdomain1
+192.168.122.1xx       kvm-lastname.localdomain     kvm-lastname
+You can find your ip address by looking at the output of the following command as root on your student VM:
+     ip add
+Or by looking in /etc/sysconfig/network-scripts/ifcfg-eth0
+ 
+Now we need to edit the /etc/httpd/conf/httpd.conf to enable VirtualHosts and add to virtualhost references... one for the default host and one for our new virutal domain.
+ 
+Edit /etc/httpd/conf/httpd.conf and add the following lines at the bottom of the configuration:
+
+<VirtualHost 192.168.122.1xx:80>
+     ServerName kvm-lastname.localdomain
+     DocumentRoot /var/www/html
+</VirtualHost>
+ 
+<VirtualHost 192.168.122.1xx:80>
+     ServerName www.testdomain1.com
+     DocumentRoot /var/www/testdomain1
+     CustomLog logs/testdomain1-access_log combined
+     ErrorLog logs/testdomain1-error_log
+</VirtualHost>
+ 
+Make sure any DocumentRoot directories you refer to exist:
+
+mkdir /var/www/testdomain1
+ 
+Put an index.html page in the testdomain1 directory
+ 
+  nano -w /var/www/testdomain1/index.html
+  Add to it the line "Hello from testdomain1" and save.
+
+Restart the webserver (systemctl restart httpd.service)
+
+Browse to your new domain
+links www.testdomain1.com
+Did it work?
+Installing PHP
+
+yum install php
+Restart the webserver
+Put an index.php page into /var/www/testdomain1 and put inside it the following:
+
+<?PHP
+phpinfo();
+?>
+Browse to the new domain again. Did it work?  Why not?
+Let's try our default domain instead.
+Create an index.php file in /var/www/html/ and put in the same sample php code shown above and then browse to your default domain.
+     links http://localhost/   or links http://kvm-lastname/
+Which page showed up?  The index.html or the index.php page?
+Now explicitly browse to the index.php page.
+    links http://localhost/index.php or links http://kvm-lastname/index.php
+Did it work?
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 22: Server Apps: MariaDB Intro ---------------------------------------------------------------------------------
+
+A brief history of MySQL and MariaDB
+
+MySQL was originally created in 1995. The developers around it formed MySQL AB, a Swedish company, that mainly got its money from support contracts. Eventually MySQL became dual / multi-licensed with one of them being the GNU GPL.
+
+In 2008 Sun Microsystems purchased MySQL AB for a reported $1 billion although since that time many of the original / main developers have left Sun to form alternative projects. There is growing confusion as to who will end up being the driving force behind MySQL in the years to come. In January of 2010, Oracle acquired Sun Microsystems.
+
+MySQL was designed to be a fast, light-weight database especially suited for the needs of web-based applications. Most often the M in "LAMP". MySQL is accessible from a large variety of programming languages including Perl, PHP, Python, C, C++ and from Java's ODBC. 
+
+MySQL has had a reputation of not being as feature complete as Oracle's database products and / or PostgreSQL. As a result some database purists turn their noses up at MySQL. As MySQL has matured many / most of the "missing features" have either been added or are on the roadmap for a future release.
+
+The correct pronunciation of MySQL is "my es que el" and not "my sequel". SEQUEL was an IBM database language which was a predecessor to SQL.  Unfortunately because of some other database products pronouncing SQL as "sequel" it might be the case that more people say it wrong than right.
+
+If you want more than that, read the MySQL wikipedia page.
+
+Some of the unique features of MySQL are:
+Multiple database storage engines (table types) - InnoDB allows for transactions
+Flexible table design - Easily insert columns and alter existing column data-types on-the-fly
+MariaDB is a community-developed fork of the MySQL and development is led by some of the original MySQL developers.  MariaDB was forked due to concerns MySQL's acquisition by Oracle Corporation.  Most Linux distributions provide mariadb.
+Monty Widenius and his daughters, My and Maria
+Packages
+
+mariadb-bench: MariaDB benchmark scripts and data
+mariadb-libs: The shared libraries required for MariaDB clients
+mariadb-server: The MariaDB server and related files
+mariadb-test: The test suite distributed with MySQL
+mariadb: MariaDB client programs and shared libraries
+Additional Packages
+
+bytefx-data-mysql: MySQL database connectivity for Mono
+lua-sql-mysql: MySQL database connectivity for the Lua programming
+mod_auth_mysql: Basic authentication for the Apache web server using a
+MySQL-python: An interface to MySQL
+pam_mysql: PAM module for auth UNIX users using MySQL data base
+perl-DBD-MySQL: A MySQL interface for perl
+php-mysql: A module for PHP applications that use MySQL databases
+qt3-MySQL: MySQL drivers for Qt 3's SQL classes
+qt-mysql: MySQL driver for Qt's SQL classes
+ruby-mysql: A Ruby interface to MySQL
+tcl-mysqltcl: MySQL interface for Tcl
+Files
+
+Control script
+       /usr/lib/systemd/system/mariadb.service
+
+Binaries
+/usr/bin/mysqld_safe - Server application
+/usr/bin/mysql - Client application (part of the mariadb package)
+/usr/bin/mysqldump - Backup utility (part of the mariadb package)
+
+Configuration files
+/etc/my.cnf (part of the mariadb-libs package)
+
+[mysqld]
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+user=mysql
+# Disabling symbolic-links is recommended to prevent assorted security risks
+symbolic-links=0
+
+[mysqld_safe]
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
+ 
+Let's look at the files on the filesystem:
+cd /var/lib/mysql ; ls -lha (Each directory is a database)
+Usage
+
+Use a client to connect to the server and then run commands on the server.
+
+Connect to mariadb-server using mysql text-based client:
+mysql -u lee.dowdle -h host -p databasename
+-p = prompt for password
+databasename = set database to "use"
+
+Creating a database:
+
+     mysql> create database whatever;
+
+Choosing a database to use:
+
+     mysql> show databases;
+     mysql> use databasename;
+     mysql> show tables;
+     mysql> describe tablename;
+
+Creating a table:
+
+     See tutorial link below.
+     Example:
+          mysql> CREATE TABLE pet (name VARCHAR(20), owner VARCHAR(20),
+    -> species VARCHAR(20), sex CHAR(1), birth DATE, death DATE);
+
+Give a user access to a database:
+mysql> grant all on whatever.* to user@host identified by 'password';
+
+Record actions:
+INSERT, UPDATE, SELECT, DELETE
+
+Please see MySQL's tutorial.
+
+Backups
+
+mysqldump -u root -p --all-databases --hex-blob --routines --triggers > mysql-complete-backup.sql
+    > = redirect output to a file since stdout is the default
+    You can get massive disk savings by compressing the .sql (120MB -> 25MB)
+    Of course you can do per-user backups, see man page for full details
+    What kind of file is an .sql file? A flat text file with .sql statements.
+ 
+To import from an .sql file, just redirect from a file.  Example:
+     mysql -u user -h hostname -p databasename < database.sql
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 23: MariaDB Hands-on [Homework 6] ---------------------------------------------------------------------------------
+
+Install it:
+ 
+     yum install mariadb-server
+ 
+Now to set it up:
+ 
+     systemctl status mariadb.service
+ 
+     Is it enabled?  If not do:
+ 
+     systemctl enable mariadb.service
+ 
+Now start it:
+ 
+     systemctl start mariadb.service
+ 
+Notice what appears in the log when you start it for the first time!  (journalctl -u mariadb.service)
+  
+Initializing MariaDB database:  Installing MariaDB system tables...
+OK
+Filling help tables...
+OK
+
+To start mariadb at boot time you have to copy
+support-files/mariadb.server to the right place for your system
+
+PLEASE REMEMBER TO SET A PASSWORD FOR THE MariaDB root USER !
+To do so, start the server, then issue the following commands:
+
+/usr/bin/mysqladmin -u root password 'new-password'
+/usr/bin/mysqladmin -u root -h sdowdle.localdomain password 'new-password'
+
+Alternatively you can run:
+/usr/bin/mysql_secure_installation
+
+which will also give you the option of removing the test
+databases and anonymous user created by default.  This is
+strongly recommended for production servers.
+
+See the manual for more instructions.
+
+You can start the MariaDB daemon with:
+cd /usr ; /usr/bin/mysqld_safe &
+
+You can test the MariaDB daemon with mysql-test-run.pl
+cd /usr/mysql-test ; perl mysql-test-run.pl
+
+Please report any problems with the /usr/bin/mysqlbug script!
+
+Starting mysqld:                                           [  OK  ]
+  
+By default a mysql root user password IS NOT set.  You can verify this by connecting without a password:
+  
+[root@kvm-dowdle ~]# mysql
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 3
+Server version: 5.5.56 Source distribution
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+  
+Set a mysql root password: (replace new-password below with the desired password)
+ 
+     /usr/bin/mysqladmin -u root password 'new-password'
+     or
+   /usr/bin/mysql_secure_installation (PREFERRED)
+  
+Restart mysqld:
+ 
+     systemctl restart mariadb.service
+  
+Verify that you can no longer connect without a password:
+  
+[root@kvm-dowdle ~]# mysql
+ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: NO)
+[root@kvm-dowdle ~]# mysql -p
+Enter password: 
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MariaDB connection id is 3
+Server version: 5.5.56 Source distribution
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql>
+
+Now let's create a new database and make a mysql user who can use it:
+
+mysql> create database dowdle;
+
+mysql> grant ALL on dowdle.* to dowdle@localhost;
+
+mysql> use mysql;
+
+mysql> set PASSWORD for 'dowdle'@'localhost' = PASSWORD('password');
+
+Alternative: (PREFERRED)
+
+mysql> grant all on dowdle.* to dowdle@localhost identified by 'password';
+
+Now exit the mysql client as the mysql root user and try to connect as your new user to their database.  Does it work?
+
+Import existing tables / data:
+
+If you look in /public on the course server you will find a file named mysqlsampledatabase.sql. scp that file to your student VM.  Have a look at the file and you'll see it is just a flat text file full of comments and SQL statements to create a database (if it doesn't already exist), create tables and then insert records into the tables.  It is basically the output of a mysqldump backup.  Edit the file with your preferred editor and search/replace every occurance of classicmodels with your last name.  Import it into your user database by using a command that takes the following form:
+
+mysql -u dowdle -p < mysqlsampledatabase.sql
+
+Then connect to the database and see what's there.
+
+mysql -u dowdle -p dowdle
+MariaDB> show tables ;
+describe customers ;
+MariaDB> select customerNumber, customerName, creditLimit from customers where creditLimit > 125000;
+Update a record:
+MariaDB> update customers set creditLimit='500000' where customerNumber=298;
+Verify it updated:
+MariaDB> select customerNumber, customerName, creditLimit from customers where creditLimit > 125000;
+
+Backup an existing database:
+
+Exit the mariadb client if you are connected and run the following command to back up the database:
+
+mysqldump --databases dowdle -u dowdle -p \
+   --hex-blob --routines --triggers > /backup/dowdle-$(date +%Y%m%d).sql
+
+That assumes you did homework 2 and have a /backup mount to copy it to.
+
+When done to submit for homework check, scp /public/homework6.txt on the course server to /root/HOMEWORK/ on your student VM.
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 24: DNS Intro & Hands-on [Homework 7] ---------------------------------------------------------------------------------
+
+Where does BIND rank? (from LAUSAH Fourth Edition)
+Table 17.1
+
+Introduction to DNS
+
+DNS associates hostnames with their respective IP addresses, so that when users want to connect to other machines on the network, they can refer to them by name, without having to remember IP addresses.
+
+Use of DNS and FQDNs also has advantages for system administrators, allowing the flexibility to change the IP address for a host without affecting name-based queries to the machine. Conversely, administrators can shuffle which machines handle a name-based query.
+
+DNS is normally implemented using centralized servers that are authoritative for some domains and refer to other DNS servers for other domains.
+
+When a client host requests information from a nameserver, it usually connects to port 53. The nameserver then attempts to resolve the FQDN based on its resolver library, which may contain authoritative information about the host requested or cached data from an earlier query. If the nameserver does not already have the answer in its resolver library, it queries other nameservers, called root nameservers, to determine which nameservers are authoritative for the FQDN in question. Then, with that information, it queries the authoritative nameservers to determine the IP address of the requested host. If a reverse lookup is performed, the same procedure is used, except that the query is made with an unknown IP address rather than a name. 
+
+Nameserver Zones
+
+On the Internet, the FQDN of a host can be broken down into different sections. These sections are organized into a hierarchy (much like a tree), with a main trunk, primary branches, secondary branches, and so forth. Consider the following FQDN:
+
+bob.sales.example.com
+
+When looking at how an FQDN is resolved to find the IP address that relates to a particular system, read the name from right to left, with each level of the hierarchy divided by periods (.). In this example, com defines the top level domain for this FQDN. The name example is a sub-domain under com, while sales is a sub-domain under example. The name furthest to the left, bob, identifies a specific machine hostname.
+
+Except for the hostname, each section is called a zone, which defines a specific namespace. A namespace controls the naming of the sub-domains to its left. While this example only contains two sub-domains, an FQDN must contain at least one sub-domain but may include many more, depending upon how the namespace is organized.
+
+Zones are defined on authoritative nameservers through the use of zone files (which describe the namespace of that zone), the mail servers to be used for a particular domain or sub-domain, and more. Zone files are stored on primary nameservers (also called master nameservers), which are truly authoritative and where changes are made to the files, and secondary nameservers (also called slave nameservers), which receive their zone files from the primary nameservers. Any nameserver can be a primary and secondary nameserver for different zones at the same time, and they may also be considered authoritative for multiple zones. It all depends on how the nameserver is configured.
+
+Nameserver Types
+   
+There are two primary nameserver configuration types:
+   
+Authoritative
+  
+Authoritative nameservers answer to resource records that are part of their zones only. This category includes both primary (master) and secondary (slave) nameservers.
+  
+Recursive
+  
+Recursive nameservers offer resolution services, but they are not authoritative for any zone. Answers for all resolutions are cached in a memory for a fixed period of time, which is specified bythe retrieved resource record.
+
+  
+Most Frequently Used Types of Records
+DNS record types (from LAUSAH Fourth Edition)
+Table 17.6
+
+A - Address Records
+CNAME - Canonical Name maps one name to another
+MX - Mail eXchange record
+NS - NameServer record
+PTR - PoinTeR record, primarily for reverse resolution
+SOA - Start Of Authority resource record
+Others - SRV, TXT, AAAA
+bind package information
+
+Package name:
+bind - With authoritative zones
+ 
+Service control script:
+/etc/rc.d/init.d/named (sysvinit)
+/usr/lib/systemd/system/named.service (systemd)
+
+Binary:
+/usr/sbin/named
+
+Config files:
+[root@ct-dowdle /]# rpm -qc bind
+/etc/logrotate.d/named
+/etc/named.conf
+/etc/named.iscdlv.key
+/etc/named.rfc1912.zones
+/etc/named.root.key
+/etc/rndc.conf
+/etc/rndc.key
+/etc/sysconfig/named
+/var/named/named.ca
+/var/named/named.empty
+/var/named/named.localhost
+/var/named/named.loopback 
+Simplified view of how it works
+
+/etc/named.conf states which zones a name server is authoritative for.
+Example:
+
+options {
+directory "/var/named";
+};
+
+zone "example.com." IN {
+type master;
+file "example.com.zone";
+};
+
+See "Example Zone Record" in this week's content to see a sample zone record.
+
+Zone Transfers
+
+A zone transfer is the process by which a DNS master communicates with one or more DNS slave servers to propagate new and updated zone information. With BIND you have to create an encryption key setup where your servers trust each other and accept transfers.
+
+Common Mistakes to Avoid
+
+It is very common for beginners to make mistakes when editing BIND configuration files. Be sure to avoid the following issues:
+
+Take care to increment the serial number when editing a zone file.
+If the serial number is not incremented, the master nameserver has the correct, new information, but the slave nameservers are never notified of the change and do not attempt to refresh their data of that zone.
+Be careful to use ellipses and semi-colons correctly in the /etc/named.conf file. An omitted semi-colon or unclosed ellipse section can cause named to refuse to start.
+Remember to place periods (.) in zone files after all FQDNs and omit them on hostnames.
+A period at the end of a domain name denotes a fully qualified domain name. If the period is omitted, then named appends the name of the zone or the $ORIGIN value to complete it.
+If a firewall is blocking connections from the named program to other nameservers, update your firewall.
+By default, BIND version 9 uses random ports above 1024 to query other nameservers. Some firewalls, however, expect all nameservers to communicate using only port 53. To force named to use port 53, add the following line to the options statement of /etc/named.conf:
+query-source address * port 53;
+Hands On - Installing a caching-only nameserver in your student VM:
+
+Inside your student VM as root do the following:
+yum install bind (may already be installed)
+ 
+Is bind set to run automatically? If not:
+
+systemctl status named.service
+systemctl enable --now named.service
+
+Now to start using our own nameserver for DNS resolution:
+
+nano -w /etc/resolv.conf
+Comment out current line, add new line:
+nameserver 127.0.0.1
+ 
+Test it. Does it work?
+How do you test?
+
