@@ -27,6 +27,14 @@ TOC:
 26. Server Apps: MariaDB Intro
 27. MariaDB Hands-on [Homework 6]
 28. DNS Intro & Hands-on [Homework 7]
+29. Virtualization Overview
+30. KVM Intro
+31. Virtualization: System Containers
+32. Virtualization: Application Containers [Homework 8]
+33. 18APR - Virtualization: Desktops / VDI
+34. QUIZ 4 ANSWERS
+35. QUIZ 5 ANSWERS
+ 
 -----------------------------------------------------------------------------------------------------------------------------
 LECTURE 1: UNIX/LINUX HISTORY---------------------------------------------------------------------------------
 In the Beginning
@@ -2753,3 +2761,606 @@ nameserver 127.0.0.1
 Test it. Does it work?
 How do you test?
 
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 25. Virtualization Overview ---------------------------------------------------------------------------------
+
+The goal of this lecture is to introduce you to the various virtualization products that are available for Linux and to compare and contrast them.
+
+Related but distinctly different topics include:Terminal Services and Application Virtualization
+
+Why Virtualize?
+
+Increase hardware utilization
+Improved resource management (configuration changes vs. hardware)
+Cost and energy savings
+Legacy OS / Applications won't run on new hardware
+Easier migration because hardware is abstracted
+Development and Testing
+Less painful upgrades with easy rollback
+Improved reliability with high availability / live or offline migration
+Security by isolating services
+Use Cases
+
+Desktop user - Trying out new OSes, Linux distro hopping 
+Small business - Servers and desktops
+Enterprise business - Datacenters for cost and energy savings
+Education - You have VMs and containers, right?
+Research - Easily make environments and simulations
+Cloud computing is heavily based on virtualization
+Brief History of Virtualization
+
+On mainframe computers IBM has had virtualization features built into their hardware since the 1960s.
+
+In micro and personal computers the first virtualization product I heard about was a card for the Apple II that allowed running some DOS applications.
+
+Later Atari ST users could emulate Atari 8-bit computers.
+PC emulation was possible with PC-Ditto.
+Mac emulation was possible with Spectre.
+
+Video game machine emulators are quite common... think MAME.
+
+VMware released its first product in 1999.
+Types of Hypervisors
+
+A term you will see tossed around frequently when referring to both Full virtualization and paravirtualization is hypervisor. The two distinct categories of hypervisors are:
+Level 1 - bare metal
+Level 2 - hosted
+Many virtualization vendors offer a layered approach to their product line and may offer both type 1 and type 2 based products.
+Products
+
+VMware [1999] (wikipedia)
+Full virtualization
+Type 2 - Windows, Mac, and Linux
+VMware Player (no cost)
+Server (no cost)
+Workstation (cost)
+Fusion (cost)
+Type 1
+ESX / Infrastructure (cost)
+ESXi (no cost)
+SWsoft Virtuozzo [2001] (wikipedia) - Later Parallels
+OS virtualization
+Linux version 2001 (cost)
+Windows version 2005 (cost)
+
+Linux-VServer [2001] (wikipedia)
+OS virtualization
+Linux only (free software)
+
+Xen / Citrix [2003] (wikipedia)
+Paravirtualization
+Linux (free software, no cost, and cost)
+Windows (maybe)
+
+OpenVZ [2005] (wikipedia)
+OS virtualization (upstream of Virtuozzo)
+Linux only (free software)
+
+Parallels [2005] (wikipedia)
+Full virtualization
+Type 2 for Mac, Linux & Windows
+May have a Type 1?!?
+OS virtualization (see Virtuozzo)
+
+VirtualBox [2007] (wikipedia)
+Full virtualization
+Type 2 for Mac, Linux, Windows, and Solaris
+
+KVM [2007] (wikipedia)
+Full virtualization
+Type 1.5 / Hybrid? Requires virt support in CPU
+
+LXC [2008] (wikipedia)
+OS virtualization
+Linux only
+Docker [2013] (wikipedia)
+Application containers
+Linux and Microsoft Windows
+I will spend quite a bit of time elaborating on each product, its design and how they differ... verbally in class. More detail will be offered in additional lectures as we concentrate on specific products.
+
+Things not covered: UML, Wine, Win4Lin, QEMU, Bochs
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 26. KVM Intro ---------------------------------------------------------------------------------
+
+KVM History
+
+KVM (http://www.linux-kvm.org/page/Main_Page) stands for Kernel-based Virtual Machine and was added to the mainline Linux kernel starting with 2.6.20 (early 2007). KVM started as a development project lead by Avi Kivity and funded by technology startup Qumranet in Israel.
+
+Qumranet created a commercial product based on KVM named SolidICE which specialized in end-user desktop machines. SolidICE included a patented remoting protocol named SPICE which is similar to the RDP, Citrix ICA, Pc-over-IP, etc.
+
+In September 2008 Qumranet was acquired by Red Hat.
+
+How KVM Works
+
+KVM requires CPU hardware support for virtualization in the CPU. It is implemented within the Linux kernel via three kernel modules... one for KVM proper (kvm) and two additional modules... one for each CPU type supported - Intel (kvm_intel) and AMD (kvm_amd). All KVM guests are "fully-virtualized".
+
+The design behind KVM is to use the Linux kernel as the hypervisor... so you get all of the device drivers / hardware support and other functionality that is already part of the Linux kernel (scheduler, memory management, etc) "for free". By reusing code (the Linux kernel) KVM is actually very lean and less complicated when compared to other, stand-alone hypervisors who have to provide their own device driver and OS functions.
+
+KVM is a kernel module, what about the userland?
+
+Disk Storage
+
+qcow2 is the native disk image format used by KVM.  It is typically thin-provisioned but can be fully pre-allocated if desired.
+
+RAW disk format is also available and fully pre-allocated
+
+It is possible to take an existing VM disk image from a few other virt platforms and convert them but often some internal changes may be needed (think drivers) post conversion.
+
+Emulation vs. virtio
+
+KVM provides a good range of virtualized hardware (examples: e1000 and RTL8139 NICs) but they can be less efficient because the hypervisor has to emulate the devices (aka work harder)
+
+virtio is a standard for device drivers where the device "knows" it is within virtualization.  virtio drivers provide much better performance than emulated devices.
+
+libvirt - Rosetta stone of virtualization?
+
+libvirt (http://libvirt.org/) is a library that is released under the GNU Lesser General Public License and is primarily sponsored by Red Hat. The goal of the project is to produce a management library / abstraction layer / API for the plethora of virtualization on the market. libvirt abstracts access to Xen, QEMU, KVM, LXC (native Linux containers), OpenVZ, User Mode Linux and even commercial products such as VMware (type1 and type2), VirtualBox, and Microsoft's Hyper-V.
+
+virt-manager - GUI frontend for Xen or KVM VMs based on libvirt
+
+virt-manager (http://virt-manager.org/) is a fairly comprehensive application that lets you create, configure, start, stop, destroy, and re-configure KVM virtual machines. It also offers performance monitoring and access to the graphical console of your VMs (via SPICE or VNC).  Available for Microsoft Windows too.
+
+It can have one or more "connections" for managing local or remote VMs of type system or session (user).
+See also: GNOME Boxes (for session VMs)
+Demo virt-manager here.
+virsh -command line tool to manage Xen or KVM VMs based on libvirt
+
+virsh list --all
+virst start vmname
+virsh shutdown vmname
+
+virsh can also be used in an interactive mode where you can actually alter the configurations of your VMs.
+ 
+Demo virsh here.
+virt-install - command line tool for creating virtual machines
+
+virt-install --name centos74 --ram 2048 \
+--disk path=/vm/demo1.img,size=10 --network=bridge:vmbr0 \
+--vnc --os-type=linux --os-variant=rhel7 \
+--cdrom /isos/centos7-x86_64.iso --accelerate
+ 
+Although virt-install is a command line application, when doing an interactive OS install, you almost always need access to a graphical console. Luckily virt-install will automatically launch remote-viewer.
+virt-viewer (also remote-viewer)
+
+virt-viewer is a minimal tool for displaying the graphical console of a virtual machine. The console is accessed using the VNC protocol.
+The guest can be referred to based on its name, ID, or UUID.
+spice://host.example.com:port
+(starts at 5900)
+Other tools
+
+Some additional tools from the libguestfs-tools package and other packages include:
+qemu-img - Work with disk images
+guestmount - Mount a guest on the host
+virt-cat - Display a file in a virtual machine
+virt-clone - Clone an existing VM to make a new one
+virt-df - Display free space on virtual filesystems
+virt-edit - Edit a file in a virtual machine
+virt-inspector - Display information about a VM
+virt-filesystems - List filesystems in a VM or disk image
+virt-ls - List filesystems in a virtual machine or disk image
+virt-rescue - Run a rescue shell on a virtual machine
+virt-win-reg - Display Windows Registry entries from a VM
+virt-resize - Easily resize a VM disk file
+virt-p2v - Convert a physical machine into a VM
+virt-v2v - Convert a physical machine into a VM
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 27. Virtualization: System Containers ---------------------------------------------------------------------------------
+
+As mentioned in the virtualization overview, the first form of system containers available for Linux was Virtuozzo made by SWsoft (later Parallels and then Virtuozzo) back in 2001.  OpenVZ was released as a FLOSS project in 2005 as OpenVZ.  OpenVZ and Virtuozzo continue but will always be out-of-tree (not in the mainline Linux kernel) and as a result don't have much chance for widespread, mainstream adoption.
+
+Red Hat doesn't seem to care much about system containers although they were an early adopter of application containers.  Red Hat was using a form of containers (called gears) they devised for their OpenShift product, they later switched to Docker and Kubernetes.  Red Hat included basic support for LXC in libvirtd/virt-manager but has since discontinued support for LXC in RHEL7.
+
+Canonical (the company behind the Ubuntu Linux distribution) is the primary developer and maintainer behind LXC.  For more information, see:  https://linuxcontainers.org/lxc/introduction/
+
+What is LXC?
+
+LXC is a set of userlevel interfaces, libraries, OS Templates, and binaries that allow one to create system containers. LXC uses various container features provided by the Linux kernel which include: namespaces, capabilities, and control groups.
+
+LXC is available on EL7 via the EPEL repository. This is fine for learning about LXC and the LXC tools but if you want to use LXC in a production environment, I recommend using LXC/LXD run on top of LTS Ubuntu releases.
+
+Installing LXC on CentOS 7 (student VM)
+
+yum -y install libvirt
+systemctl enable --now libvirtd.service
+yum install lxc lxc-templates lxc-doc lxc-libs lxc-extra
+
+On CentOS I typically have libvirtd / KVM installed and like to reuse the virbr0 device provided by libvirtd for use with LXC containers.  That gives them NAT network access.  For LXC containers to use IP addresses on the same network as the host, it is recommended to create a bridge device (typically br0) and connect the primary host ethernet device to it as well as desired containers.
+
+If you want your containers to be NATed and use the libvirtd provided virtbr0 device, you can either edit the global lxc config file (/etc/lxc/default.conf) which is provided by the lxc-libs package or each individual container config file.
+
+Then make sure to enable and start the lxc.service with:
+systemctl enable --now lxc.service
+
+Creating an LXC container
+
+Assuming a libvirtd NATed environment with the virbr0 device, libvirtd also provides a rudamentary DHCP server (dnsmasq) and DNS server (unbound) primarily to meet the needs of VMs and containers using DHCP.  As a result, network configuration will be automatic.
+
+lxc-create -n {name} -t download (will provide a list of available OS Templates)
+  {examples shown in screencast and in class}
+
+LXC Container lifecycle
+
+To list available containers: lxc-ls --fancy
+To start a container: lxc-start -d -n {container-name}
+To attach to a container: lxc-attach -n {container-name}
+To stop a container: lxc-stop -n {container-name}
+To remove a container: lxc-destroy -n {container-name}
+
+You can also access the container over the network as long as openssh-server is installed and enabled.  You can create user accounts and even install a GUI desktop environment (XFCE for example) which you can connect to with a remoting protocol (x2go for example).
+
+You can treat your container just like a server / virtual machine.
+
+Resource Management of LXC containers
+
+Limiting resources of LXC containers is possible but somewhat of a dark art on CentOS.  It is much more manageable on Ubuntu.  For this example the container has access to all of the resources on the host which admittedly is not ideal.
+
+Processes from within the container and from the host view
+
+Note the output of pstree -nup from within the container and from the container host view.  As you can see, a container has its own pid namespace but from the view of the container host, a container is nothing more than a grouping of processes with its own init system (systemd, etc).
+
+From within the container:
+systemd(1)─┬─systemd-journal(27)
+           ├─irqbalance(56)───{gmain}(61)
+           ├─alsactl(57)
+           ├─dbus-daemon(60,dbus)
+           ├─firewalld(63)───{gmain}(213)
+           ├─rngd(64)
+           ├─x2gocleansessio(81)
+           ├─systemd-logind(86)
+           ├─systemd-network(104,systemd-network)
+           ├─NetworkManager(105)─┬─{gmain}(123)
+           │                     ├─{gdbus}(125)
+           │                     └─dhclient(227)
+           ├─systemd-resolve(127,systemd-resolve)
+           ├─atd(144)
+           ├─agetty(148)
+           ├─agetty(149)
+           ├─agetty(150)
+           ├─agetty(151)
+           ├─agetty(152)
+           ├─polkitd(192,polkitd)─┬─{gmain}(209)
+           │                      ├─{gdbus}(210)
+           │                      ├─{JS GC Helper}(216)
+           │                      ├─{JS Sour~ Thread}(220)
+           │                      └─{polkitd}(223)
+           ├─crond(1177)
+           ├─gssproxy(3697)─┬─{gssproxy}(3698)
+           │                ├─{gssproxy}(3699)
+           │                ├─{gssproxy}(3700)
+           │                ├─{gssproxy}(3701)
+           │                └─{gssproxy}(3702)
+           ├─sshd(5896)
+           └─sssd(16352)─┬─sssd_be(16353)
+                         └─sssd_nss(16354)
+
+From the container host:
+
+|-lxc-start(13938)---systemd(13953)-+-sssd(3635)-+-sssd_be(3636)
+|                                   |            `-sssd_nss(3637)
+|                                   |-anacron(11071)
+|                                   |-systemd-journal(13990)
+|                                   |-irqbalance(14030)---{irqbalance}(14044)
+|                                   |-alsactl(14031)
+|                                   |-dbus-daemon(14034,dbus)
+|                                   |-firewalld(14055)---{firewalld}(14284)
+|                                   |-rngd(14056)
+|                                   |-x2gocleansessio(14086)
+|                                   |-systemd-logind(14100)
+|                                   |-systemd-network(14152,systemd-network)
+|                                   |-NetworkManager(14153)-+-{NetworkManager}(14175)
+|                                   |                       |-{NetworkManager}(14177)
+|                                   |                       `-dhclient(14307)
+|                                   |-systemd-resolve(14179,systemd-resolve)
+|                                   |-atd(14196)
+|                                   |-agetty(14200)
+|                                   |-agetty(14201)
+|                                   |-agetty(14202)
+|                                   |-agetty(14203)
+|                                   |-agetty(14204)
+|                                   |-polkitd(14255,lightdm)-+-{polkitd}(14280)
+|                                   |                        |-{polkitd}(14281)
+|                                   |                        |-{polkitd}(14287)
+|                                   |                        |-{polkitd}(14291)
+|                                   |                        `-{polkitd}(14294)
+|                                   |-crond(16040)
+|                                   |-gssproxy(20641)-+-{gssproxy}(20642)
+|                                   |                 |-{gssproxy}(20643)
+|                                   |                 |-{gssproxy}(20644)
+|                                   |                 |-{gssproxy}(20645)
+|                                   |                 `-{gssproxy}(20646)
+|                                   `-sshd(24040)
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 28. Virtualization: Application Containers [Homework 8] ---------------------------------------------------------------------------------
+System Containers were fairly easy to understand... they are very much like virtual machines but with some limitations... implemented as isolated and resource constrained groups of processes under a shared kernel.
+
+Application containers are a bit more vague.  One way to understand Application Containers is to examine the concept of Microservices.  A complex software solution may be made up of a number of individual software components that are configured to work together (aka integrated).  A web application is often a combination of HTML, client-side Javascript, server-side PHP (or other scripting language), database backend for application data as well as user authentication.
+
+Packaging and deploying a complex software solution as a monolitic stack that ran on a single server made a lot of sense (really, the only way to do it) when it was only used by small, medium and large-sized businesses with a customer base under a few tens of thousands.  Then the Internet happened and web-based businesses found themselves wanting to scale to much larger customer bases... often with unpredictable spikes.  A monolithic software stack just is not capable of scaling individual components as demand increases and bottlenecks appear and often break. Different components in a stack may scale differently.
+
+For large-scale applications the service oriented architecture (SOA) was developed with microservices being a key component.  Basically, if a database is a bottleneck, create a cluster of databases that grows and shrinks on-demand to meet the ever changing load.  Application containers are the technology that has enabled the SOA.  Each instance within a fleet of services is a microservice.
+
+Pets vs. Cattle (apologies to vegans)
+
+VMs and system containers are often seen as pets... individual and unique entities that you care about by providing continued care and maintenance.  Application containers are seen more as cattle... ie their numbers will grow and shrink.  Have too many, destroy what you don't need.  Have too few, create more.
+
+Docker
+
+One thing Docker brought to the table when it was introduced in 2013 was speed.
+
+As witnessed in class, creating a VM is faster than setting up a physical system... AND... creating a system container was much faster than creating a VM.  Creating an application container is much faster than creating a system container.
+
+Once a container image is built and available, a Docker application container can be created and started in a sub-second.  This is accomplished by using a shared, read-only base image and creating a scratch space to store changes that may or may not need to be retained and being able to combine the read-only and scratch space into a cohesive filesystem by using a union filesystem approach aka layering.  Since application containers often do not need persistent storage, the step of creating a new disk / filesystem of significant size for each application container has been eliminated.  Also an individual service (say a web server or a database server) is less processes to start up than a full system greatly improving startup time.
+
+Docker Marketing
+
+Docker came from a platform-as-a-service company (dotCloud) that used all proprietary software and with the popularization of application containers, morphed into the open source company Docker, Inc.  Another element that lead to Docker's mindshare success was the fact that they came up with a good way to explain it... a giant container ship on the ocean... with an application container being one of the storage containers.  Load them up, move them around, they are all the same.  Package your application/service into a container and it is now a standardized thing that can be easily and consistently replicated and deployed.  There is (almost) no difference when running a single container on a developers machine and running a fleet of them in a clustered datacenter
+
+Hands-on (Homework 8)
+Docker is a fairly complex thing and we aren't going to master it in a single, fairly short lecture... but we can install it and create a container and play with it... and understand some of the concepts.  For various reasons, Red Hat has been sponsoring the development of Docker compatible alternatives.  These include podman, buildah, skopeo, CRI-O... with their own enterprise class PaaS system named OpenShift.  Both Docker and Red Hat's alternative tools are available for CentOS.  We are going to use podman for the hands-on.  Want a coloring book on Red Hat's application container line-up?
+
+Goals:
+  1) Install podman
+  2) Create / run a container
+  3) Get a basic understanding of the application container life-cycle
+
+Installing podman on CentOS 7
+
+  yum install podman
+
+podman Container Lifecycle
+
+podman is pre-configured to talk to a number of different container image repositories (aka "registry").  These include Docker, CentOS and Quay.
+
+  podman search centos
+(Examine output)
+
+Create and run a CentOS application container
+
+podman run -it registry.centos.org/centos
+   -i means interactive and -t means terminal
+
+If your local system doesn't already have a copy of the image in question, it will download it.  To list images you already have downloaded you can run:
+podman images
+
+To list containers
+  podman ps (running)
+  podman ps -a (running and stopped)
+
+Docker containers are mostly cattle and you don't care about the files / changes made by any particular container.  There is even a flag to automatically destroy a container when it is exited:
+  podman run --rm -it registry.centos.org/centos
+
+If you do have files you care about, you can commit the container to make a new image from it.
+
+podman commit {id|name} {newname}
+That makes a new image you can create containers from.
+
+ -d is detach flag
+
+ ^p^q from an interactive container, detaches it.
+
+To attach to a detached running container you can:
+  podman attach {id|name}
+
+Additional podman flags:
+  podman images
+  podman start [name]
+  podman stop [name]
+  podman kill {name}
+  podman rm {name}
+  podman rmi {imagename}
+  podman commit [name] [new name]
+
+When done, copy /public/homework8.txt over to /root/HOMEWORK/ on your student VM.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+LECTURE 29. Virtualization: Desktops / VDI ---------------------------------------------------------------------------------
+
+Hopefully what you have learned about virtualization for servers has lead you to wonder how virtualization could be leveraged for desktops.
+
+Client-side Hypervisors
+
+What is a client-side hypervisor? It is basically the software you need to run virtual machines built into the computer via firmware (or a minimal system on local storage) so you can boot up a laptop or a desktop and pick from a list of local or even possibly remote VM images.
+
+One of the main problems with operating systems are those pesky drivers. Getting an older OS to work on newer hardware or a newer OS to work on ancient hardware can sometimes be challenging. The hardware layer abstraction that is offered by virtualization could really come in handy for desktops and laptops.
+
+Imagine storing a VM image in a central repository and then checking it out to run on whatever hardware you have no matter where you are. You would still be able to create and manage your own files / documents and then sync them back to the image repository when convenient.  Unfortunately the small number of client-side hypervisors products that have come out thus far have not been very successful in the marketplace.  Pain-points include noticeably degraded performance for multi-media and 3D applications.  The industry hasn't given up on client-side hypervisors and assume performance and adoption will improve in the not-too-distant future.
+ VDI *WITHOUT* Client-side Hypervisor
+
+ As a result, the dominant VDI solutions do not allow for offline use... and basically run everything in the datacenter.  VMs are accessed via remoting protocols.  There are pluses and minuses to that approach.  Want a GPU in your VM?  Doesn't matter that your local desktop or laptop has one, the server has to have one.  Originally there was a 1-to-1 ratio between GPU and GPU-user but that has gotten better with multi-GPU cards and drivers GPUs across multiple VMs.  The most successful product currently on the market is VMware Horizon... but it is very expensive.  Because of licensing costs, VDI does not save money over physical machines... but cost models can almost always be manipulated to say whatever you want.
+
+VDI and DaaS (Desktop as a Service)
+
+Imagine being able to use a thin-client device, a desktop, laptop, or mobile device to stream one or more VMs over a local area network, WAN, or broadband connection regardless of where you are. A number of remote desktop protocols have been created / enhanced to provide as close to a "local machine" experience as possible. These include:
+
+Citrix's ICA with the HDX extension
+VMware's PCoverIP
+Microsoft's RDP with RemoteFX (requires physical GPUs)
+Red Hat's SPICE
+nComputing's UXP
+Virtual Bridge's VERDE
+No Machine's NX (v3 Linux-only server, v4 for Linux, Win, Mac)
+x2go (a fork of NX v3)
+Wayland has RDP built-in (almost)
+
+Of course regular desktop computers can run remote desktop protocols as well as thin-client software. One such is VDI Blaster by Devon IT.
+
+It remains to be seen how well VDI will work out and if it is truly the future of the desktop computing platform.
+Will VDI and DaaS be cheaper than traditional desktops?  Brian Madden has written quite a bit about how cost models can be easily manipulated to make them say whatever you want. The consensus seems to be (regardless of what the product vendors claim) that currently, self-hosted VDI (over fast LANs) is more expensive mainly because server hardware is more costly than commodity desktop / laptop systems... along with the considerable licensing costs for commercial VDI solutions.   Large providers like Amazon may be able to provide budget pricing but how well will it work over existing network connections when a large number of desktops are are being streamed?
+Unfortunately the bulk of the OS code has been written assuming a local, physical machine with high performance components and LAN resources at higher speeds.  A lot of the performance issues and the requirements for bolt-on products to provide functions like persistent storage of user customization, data and documents, access to USB devices, printing, etc... may be solved if and when OS makers enhance their offerings with VDI / DaaS targeted features.
+Lastly there is also a vision of the future where a device the size of a smartphone can be used to completely replace desktop and laptop systems by docking the smaller devices to traditional screens, keyboard and mouse.  There is also the possibility of new input device technology that mimics the functionality of larger screens, keyboard and mouse but with a much smaller form factor.  We'll just have to wait and see how it all pans out.
+In 2014 a number of commercial DaaS sprang up.  VMware has an offering as does Amazon.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+QUIZ 4 ANSWERS ---------------------------------------------------------------------------------
+
+01) By default postfix will accept SMTP connections from localhost and outside hosts.
+True <--
+False
+
+02) Whenever you edit / update the /etc/aliases file, what must you do for changes to apply?
+a) Restart smtpd
+b) Run newaliases <--
+c) Nothing
+d) Increase serial #
+
+03) Where does the system store a user's inbound mail (inbox)?
+a) /home/{username}/mbox
+b) /var/spool/mail/{username} <--
+
+04) Each user’s inbox is a flat text file.
+True <--
+False
+
+05) By default, most service accounts have their email redirected to the root account.Hint: If unsure, look in /etc/aliases
+True <--
+False
+
+06) What file in a user's home directory acts as a user-specific configuration file for email?
+a) .sendmail
+b) .forward <--
+c) .htaccess
+d) smtpauthApache
+
+07) /etc/httpd/conf.d/welcome.conf contains info on how to make the welcome page go away?
+True <--
+False
+
+08) What project did the Apache developers come from prior to starting Apache?
+a) CERN HTTPd
+b) NCSA HTTPd <--
+c) Netscape HTTPd
+
+09) What is the main Apache configuration file as configured by Red Hat/CentOS?
+a) /etc/httpd.conf
+b) /etc/httpd/conf.d/welcome.conf
+c) /etc/httpd/conf/httpd.conf <--
+d) /var/www/html/index.html
+
+10) What is the default directory for UserDirs as configured by Red Hat /CentOS?
+a) ~/web/
+b) ~/www.html
+c) /var/www/html/users/username/
+d) ~/public_html/ <--
+
+11) What Apache config item sets the file that will be served if a directory is requested?
+a) CGIScriptAlias 
+b) DirectoryIndex <--
+c) UserDir
+d) VirtualHost
+
+12) What is the default Apache DocumentRoot as configured by Red Hat/CentOS?
+a) ~/public_html/
+b) /srv/apache/htdocs/
+c) /var/spool/httpd/
+d) /var/www/html/ <--
+
+MySQL MariaDB13) MySQL uses system accounts for database access.
+True
+False <--
+
+14) Who bought MySQL AB in 2008?
+a) Sun Microsystems <--
+b) PostgreSQL
+c) IBM
+d) Red Hat
+
+15) mysqldump without any output flags nor redirection, outputs in what format?
+a) Comma separated value
+b) A binary file
+c) To a .dmp file
+d) Text in the form of SQL statements to standard output <--
+
+16) Where does MySQL store its database files?
+a) /var/run/
+b) /var/spool/mysql/
+c) /var/lib/mysql/ <--
+d) /var/mysql/
+
+17) The mysql text-based client uses the -h flag for what purpose?
+a) Redirect output to printer
+b) Tells it to prompt for a password
+c) Allows you to specify what host to connect to <--
+d) Specifies what port to use to connectDNS and BIND
+
+18) What file is consulted first and as an alternative to a DNS query?
+a) /etc/named.conf
+b) /etc/bind.conf
+c) /var/lib/named/
+d) /etc/hosts <--
+
+19) What is the main bind configuration file?
+a) /etc/named.conf <--
+b) /etc/nameserver.conf
+c) /var/lib/named/
+d) /etc/hosts
+
+20) Changes to a DNS zone record are not noticed on the secondary unless what is updated?
+a) The TLD name servers
+b) The zone record serial number <--
+c) The zone record TTL 
+d) /etc/bind.conf
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+QUIZ 5 ANSWERS ---------------------------------------------------------------------------------
+
+01) What decade did IBM start putting virtualization features in their hardware?
+a) 1960s <-- 
+b) 1970s
+c) 1980s
+d) 1990s
+
+02) What year did VMware release their first virtualization product?
+a) 1991
+b) 1995
+c) 1999 <-- 
+d) 2010
+
+03) VirtualBox is a bare-metal (type 1) hypervisor.
+True 
+False <-- 
+
+04) KVM is a native feature of the mainline Linux kernel via kernel modules.
+True <-- 
+False
+
+05) Which KVM tool is command line based?
+a) virt-manager
+b) remote-viewer
+c) virsh <-- 
+d) GNOME Boxes
+
+06) KVM requires hardware support for virtualization in the CPU.
+True <-- 
+False
+
+07) Which company originally created KVM in 2007?
+a) VMware
+b) Citrix
+c) IBM
+d) Qumranet <--
+
+08) LXC is what type of virtualization?
+a) System Containers <--
+b) Hardware
+c) Application
+d) Full
+
+09) All of the following are true except...
+a) An application container does not use an init system
+b) A container typically uses less resources than a fully-virtualized machine
+c) OpenVZ is being considered by the mainline kernel developers for inclusion <--
+d) Docker is for application containers
+
+10) All of the following are true about a container OS Template except...
+a) It is installation media for a container
+b) You “boot it” like just like installation media on a physical machine <--
+c) It is a .tar.(gz|xz) file that holds the filesystem of a Linux distribution
+d) Docker | podman uses a read-only base image and layers on top of it
